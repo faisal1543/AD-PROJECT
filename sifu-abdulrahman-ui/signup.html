@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#F6F1E8">
+
+  <title>SIFU Study Planner | Sign Up</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body class="auth-phone-body">
+  <main class="auth-phone signup-phone">
+    <section class="auth-phone-content signup-content">
+
+      <div class="auth-logo-wrap signup-logo-wrap">
+        <img src="assets/logo.jpeg" alt="SIFU Study Planner Logo" class="auth-logo signup-logo">
+      </div>
+
+      <div class="auth-heading signup-heading">
+        <h1>Create Account</h1>
+        <p>Join SIFU and start planning smarter</p>
+      </div>
+
+      <form id="signupForm" class="auth-form" novalidate>
+        <div class="auth-field">
+          <label for="fullName">Full Name</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-person auth-input-icon"></i>
+            <input id="fullName" type="text" autocomplete="name" placeholder="Enter full name" required>
+          </div>
+
+          <small class="auth-error">Full name is required.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="signupEmail">UTM Email</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-envelope auth-input-icon"></i>
+            <input id="signupEmail" type="email" autocomplete="email" placeholder="student@graduate.utm.my" required>
+          </div>
+
+          <small class="auth-error">Use a valid UTM email ending with utm.my.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="faculty">Faculty</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-mortarboard auth-input-icon"></i>
+            <select id="faculty" required>
+              <option value="">Choose faculty</option>
+              <option>Faculty of Computing</option>
+              <option>Faculty of Engineering</option>
+              <option>Faculty of Management</option>
+              <option>Faculty of Science</option>
+            </select>
+            <i class="bi bi-chevron-down auth-select-icon"></i>
+          </div>
+
+          <small class="auth-error">Faculty is required.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="programme">Programme</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-journal-code auth-input-icon"></i>
+            <input id="programme" type="text" placeholder="Enter programme" required>
+          </div>
+
+          <small class="auth-error">Programme is required.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="yearOfStudy">Year of Study</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-book auth-input-icon"></i>
+            <select id="yearOfStudy" required>
+              <option value="">Choose year</option>
+              <option>Year 1</option>
+              <option>Year 2</option>
+              <option>Year 3</option>
+              <option>Year 4</option>
+            </select>
+            <i class="bi bi-chevron-down auth-select-icon"></i>
+          </div>
+
+          <small class="auth-error">Year of study is required.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="signupPassword">Password</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-lock auth-input-icon"></i>
+            <input id="signupPassword" type="password" autocomplete="new-password" placeholder="Create password" required>
+
+            <button id="toggleSignupPassword" class="auth-eye-btn" type="button" aria-label="Show password">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+
+          <small class="auth-error">Password is required.</small>
+        </div>
+
+        <div class="auth-field">
+          <label for="confirmPassword">Confirm Password</label>
+
+          <div class="auth-input-wrap">
+            <i class="bi bi-lock auth-input-icon"></i>
+            <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Confirm password" required>
+
+            <button id="toggleConfirmPassword" class="auth-eye-btn" type="button" aria-label="Show password">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+
+          <small class="auth-error">Passwords must match.</small>
+        </div>
+
+        <button class="auth-main-btn signup-btn" type="submit">Sign Up</button>
+      </form>
+
+    </section>
+  </main>
+
+  <div id="sifuToast" class="simple-toast">
+    <span id="toastMessage">Ready.</span>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

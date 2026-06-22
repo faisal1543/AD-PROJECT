@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#F6F1E8">
+
+  <title>SIFU Study Planner | My Courses</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body class="tracking-body">
+  <main class="tracking-phone">
+    <section class="tracking-content">
+
+      <a class="back-profile-link" href="profile.html">
+        <i class="bi bi-arrow-left"></i>
+        Back to Profile
+      </a>
+
+      <header class="tracking-header">
+        <div>
+          <h1>My Courses</h1>
+          <p id="courseSummary">Semester 4 • 4 registered courses • 11 credits</p>
+        </div>
+
+        <button class="tracking-add-btn" id="openCourseModal" type="button">
+          <i class="bi bi-plus-lg"></i>
+          Add Course
+        </button>
+      </header>
+
+      <section id="courseCards" class="tracking-list"></section>
+
+    </section>
+
+    <nav class="profile-bottom-nav" aria-label="Main navigation">
+  <a class="profile-nav-item" href="calendar.html">
+    <i class="bi bi-house-door"></i>
+    <span>Home</span>
+  </a>
+
+  <a class="profile-nav-item" href="schedule.html">
+    <i class="bi bi-calendar3"></i>
+    <span>Schedule</span>
+  </a>
+
+  <a class="profile-nav-ai" href="#" data-info="AI Hub will connect after the AI pages are merged.">
+    <i class="bi bi-stars"></i>
+    <span>AI Hub</span>
+  </a>
+
+  <a class="profile-nav-item" href="#" data-info="Alerts will connect after notifications are merged.">
+    <span class="alert-dot"></span>
+    <i class="bi bi-bell"></i>
+    <span>Alerts</span>
+  </a>
+
+  <a class="profile-nav-item" href="profile.html">
+    <i class="bi bi-person"></i>
+    <span>Profile</span>
+  </a>
+</nav>
+  </main>
+
+  <!-- Course Modal -->
+  <div class="entry-modal" id="courseModal" aria-hidden="true">
+    <div class="entry-modal-card">
+      <div class="entry-modal-header">
+        <h2 id="courseModalTitle">Add Course</h2>
+        <button class="entry-close" id="closeCourseModal" type="button">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form id="courseForm">
+        <input type="hidden" id="courseId">
+
+        <label class="entry-label" for="courseCode">Course Code</label>
+        <input class="entry-input" id="courseCode" type="text" required>
+
+        <label class="entry-label" for="courseName">Course Name</label>
+        <input class="entry-input" id="courseName" type="text" required>
+
+        <label class="entry-label" for="courseLecturer">Lecturer</label>
+        <input class="entry-input" id="courseLecturer" type="text" required>
+
+        <div class="entry-two-col">
+          <div>
+            <label class="entry-label" for="courseCredits">Credits</label>
+            <input class="entry-input" id="courseCredits" type="number" min="1" max="6" required>
+          </div>
+
+          <div>
+            <label class="entry-label" for="courseProgress">Progress %</label>
+            <input class="entry-input" id="courseProgress" type="number" min="0" max="100" required>
+          </div>
+        </div>
+
+        <label class="entry-label" for="courseColor">Course Color</label>
+        <select class="entry-input" id="courseColor">
+          <option value="red">Red</option>
+          <option value="green">Green</option>
+          <option value="salmon">Salmon</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <button class="entry-save-btn" type="submit">Save Course</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="sifuToast" class="simple-toast">
+    <span id="toastMessage">Ready.</span>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#F6F1E8">
+
+  <title>SIFU Study Planner | Profile</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body class="profile-body">
+  <main class="profile-phone">
+    <section class="profile-content">
+
+      <div class="profile-user-card">
+        <div class="profile-avatar">
+          <i class="bi bi-person"></i>
+        </div>
+
+        <div class="profile-user-info">
+          <h1 id="profileName">Sarah Chen</h1>
+          <p id="profileProgrammeYear">Computer Science, Year 3</p>
+          <span id="profileEmail">student@graduate.utm.my</span>
+        </div>
+      </div>
+
+      <section class="profile-card">
+        <h2>Academic Overview</h2>
+
+        <div class="profile-row">
+          <span>Current Semester</span>
+          <strong id="currentSemester">Semester 4</strong>
+        </div>
+
+        <div class="profile-row">
+          <span>Total Credits</span>
+          <strong id="totalCredits">72 / 120</strong>
+        </div>
+
+        <div class="profile-row">
+          <span>Current GPA</span>
+          <strong class="gpa-text" id="currentGpa">3.45</strong>
+        </div>
+
+        <div class="profile-row">
+          <span>Active Courses</span>
+          <strong id="activeCourses">4</strong>
+        </div>
+      </section>
+
+      <section class="profile-card">
+        <h2>Manage</h2>
+
+        <a class="profile-menu-item" href="courses.html">
+          <span>
+            <i class="bi bi-book"></i>
+            My Courses
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="profile-menu-item" href="tasks.html">
+          <span>
+            <i class="bi bi-check-circle"></i>
+            My Tasks
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </section>
+
+      <section class="profile-card">
+        <h2>Settings</h2>
+
+        <a class="profile-menu-item" href="#" data-info="Notification settings will connect to the notification page after merge.">
+          <span>
+            <i class="bi bi-bell"></i>
+            Notifications
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="profile-menu-item" href="#" data-info="Study goals will connect to the AI planner after merge.">
+          <span>
+            <i class="bi bi-bullseye"></i>
+            Study Goals
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="profile-menu-item" href="#" data-info="Account settings are part of the User Management module.">
+          <span>
+            <i class="bi bi-gear"></i>
+            Account Settings
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a class="profile-menu-item" href="#" data-info="Help and support will connect to the support page after merge.">
+          <span>
+            <i class="bi bi-question-circle"></i>
+            Help & Support
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </section>
+
+      <section class="profile-card admin-card">
+        <h2>Admin Panel</h2>
+
+        <a class="profile-menu-item" href="#" data-info="Resource Management will connect to the admin/resource module after merge.">
+          <span>
+            <i class="bi bi-database"></i>
+            Resource Management
+          </span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </section>
+
+      <button class="profile-logout" type="button" data-logout>
+        <i class="bi bi-box-arrow-left"></i>
+        Log Out
+      </button>
+
+    </section>
+
+    <nav class="profile-bottom-nav" aria-label="Main navigation">
+  <a class="profile-nav-item" href="calendar.html">
+    <i class="bi bi-house-door"></i>
+    <span>Home</span>
+  </a>
+
+  <a class="profile-nav-item" href="schedule.html">
+    <i class="bi bi-calendar3"></i>
+    <span>Schedule</span>
+  </a>
+
+  <a class="profile-nav-ai" href="#" data-info="AI Hub will connect after the AI pages are merged.">
+    <i class="bi bi-stars"></i>
+    <span>AI Hub</span>
+  </a>
+
+  <a class="profile-nav-item" href="#" data-info="Alerts will connect after notifications are merged.">
+    <span class="alert-dot"></span>
+    <i class="bi bi-bell"></i>
+    <span>Alerts</span>
+  </a>
+
+  <a class="profile-nav-item active" href="profile.html">
+    <i class="bi bi-person"></i>
+    <span>Profile</span>
+  </a>
+</nav>
+  </main>
+
+  <div id="sifuToast" class="simple-toast">
+    <span id="toastMessage">Ready.</span>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
