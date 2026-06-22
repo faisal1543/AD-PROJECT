@@ -14,17 +14,17 @@ This repository contains the frontend implementation for the Sifu - UTM Study Pl
 | Alfaisal    | Shared Styling                     | [style.css](sifu-alfaisal-ui/css/style.css)                   |
 | Alfaisal    | JavaScript Interactions            | [alfaisal.js](sifu-alfaisal-ui/js/alfaisal.js)                |
 | Alfaisal    | Project Logo                       | [logo.jpg](sifu-alfaisal-ui/assets/logo.jpg)                  |
-| Abdulrahman | Welcome / Splash Page              | [index.html](sifu-abdulrahman-ui/index.html)                  |
-| Abdulrahman | User Login Page                    | [login.html](sifu-abdulrahman-ui/login.html)                  |
-| Abdulrahman | User Registration Page             | [signup.html](sifu-abdulrahman-ui/signup.html)                |
-| Abdulrahman | Home Dashboard / Academic Overview | [calendar.html](sifu-abdulrahman-ui/calendar.html)            |
-| Abdulrahman | Profile and Settings Page          | [profile.html](sifu-abdulrahman-ui/profile.html)              |
-| Abdulrahman | Course Management Module           | [courses.html](sifu-abdulrahman-ui/courses.html)              |
-| Abdulrahman | Academic Task Management Module    | [tasks.html](sifu-abdulrahman-ui/tasks.html)                  |
-| Abdulrahman | Generated Study Schedule Page      | [schedule.html](sifu-abdulrahman-ui/schedule.html)            |
-| Abdulrahman | Shared Styling                     | [style.css](sifu-abdulrahman-ui/css/style.css)                |
-| Abdulrahman | JavaScript Interactions            | [app.js](sifu-abdulrahman-ui/js/app.js)                       |
-| Abdulrahman | Project Logo                       | [logo.jpeg](sifu-abdulrahman-ui/assets/logo.jpeg)             |
+| Abdulrahman | Welcome / Splash Page | [index.html](sifu-abdulrahman-ui/index.html) |
+| Abdulrahman | User Login Page | [login.html](sifu-abdulrahman-ui/login.html) |
+| Abdulrahman | User Registration Page | [signup.html](sifu-abdulrahman-ui/signup.html) |
+| Abdulrahman | Home Dashboard / Academic Overview | [calendar.html](sifu-abdulrahman-ui/calendar.html) |
+| Abdulrahman | Profile and Settings Page | [profile.html](sifu-abdulrahman-ui/profile.html) |
+| Abdulrahman | Course Management Module | [courses.html](sifu-abdulrahman-ui/courses.html) |
+| Abdulrahman | Academic Task Management Module | [tasks.html](sifu-abdulrahman-ui/tasks.html) |
+| Abdulrahman | Generated Study Schedule Page | [schedule.html](sifu-abdulrahman-ui/schedule.html) |
+| Abdulrahman | Shared Styling | [style.css](sifu-abdulrahman-ui/css/style.css) |
+| Abdulrahman | JavaScript Interactions | [app.js](sifu-abdulrahman-ui/js/app.js) |
+| Abdulrahman | Project Logo | [logo.jpeg](sifu-abdulrahman-ui/assets/logo.jpeg) |
 
 ## Technologies Used
 
