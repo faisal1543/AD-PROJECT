@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Planner | Sifu</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main class="app-shell">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+       <div class="logo-circle">
+  <img src="assets/logo.jpg" alt="Sifu Logo">
+</div>
+
+        <div>
+          <p class="eyebrow mb-0">AI Recommendation</p>
+          <h1 class="page-title">Study Planner</h1>
+        </div>
+      </div>
+
+      <a href="ai-hub.html" class="header-icon text-decoration-none" aria-label="Back to AI Hub">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </header>
+
+    <!-- Page Intro -->
+    <p class="page-subtitle">
+      Generate a smart study schedule based on your subject, available time,
+      priority level, and upcoming academic deadline.
+    </p>
+
+    <!-- Planner Form -->
+    <section class="sifu-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 class="card-title mb-1">Plan Settings</h2>
+          <p class="card-text">Tell Sifu AI what you need to focus on.</p>
+        </div>
+
+        <span class="badge-soft">
+          <i class="bi bi-magic"></i>
+          AI
+        </span>
+      </div>
+
+      <form id="plannerForm">
+        <div class="mb-3">
+          <label for="subject" class="form-label">Subject</label>
+          <select class="form-select" id="subject">
+            <option value="Application Development">Application Development</option>
+            <option value="Data Structures">Data Structures</option>
+            <option value="Computer Security">Computer Security</option>
+            <option value="Requirements Engineering">Requirements Engineering</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="hours" class="form-label">Available Study Hours Today</label>
+          <select class="form-select" id="hours">
+            <option value="2">2 hours</option>
+            <option value="3" selected>3 hours</option>
+            <option value="4">4 hours</option>
+            <option value="5">5 hours</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="priority" class="form-label">Priority Level</label>
+          <select class="form-select" id="priority">
+            <option value="High" selected>High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label for="deadline" class="form-label">Nearest Deadline</label>
+          <input type="date" class="form-control" id="deadline">
+        </div>
+
+        <button type="submit" class="primary-btn">
+          <i class="bi bi-stars me-1"></i>
+          Generate AI Study Plan
+        </button>
+      </form>
+    </section>
+
+    <!-- AI Summary -->
+    <section class="sifu-card" id="plannerSummary">
+      <div class="card-row">
+        <div class="card-icon">
+          <i class="bi bi-lightning-charge"></i>
+        </div>
+
+        <div>
+          <h3 class="card-title">Current AI Focus</h3>
+          <p class="card-text">
+            Sifu recommends starting with Application Development because it has
+            a high priority task and supports your current frontend submission.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Generated Schedule -->
+    <h2 class="section-title">Generated Study Schedule</h2>
+
+    <section class="sifu-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h3 class="card-title mb-1">Today’s Smart Plan</h3>
+          <p class="card-text">Balanced schedule generated from task priority.</p>
+        </div>
+
+        <span class="badge-soft badge-success">
+          Active
+        </span>
+      </div>
+
+      <div class="timeline" id="generatedTimeline">
+        <div class="timeline-item">
+          <div class="timeline-time">09:00</div>
+          <div class="timeline-content">
+            <h4>Review UI requirements</h4>
+            <p>Understand the SDD pages and frontend expectations.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">11:00</div>
+          <div class="timeline-content">
+            <h4>Build AI Hub and Planner UI</h4>
+            <p>Complete the main structure using HTML, CSS, Bootstrap, and JS.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">14:00</div>
+          <div class="timeline-content">
+            <h4>Polish visual design</h4>
+            <p>Improve spacing, cards, navigation, and responsive layout.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-time">20:00</div>
+          <div class="timeline-content">
+            <h4>Short DSA revision</h4>
+            <p>Review linked list and stack concepts for balance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Study Balance -->
+    <h2 class="section-title">Study Balance</h2>
+
+    <section class="sifu-card">
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Frontend UI Coding</span>
+          <strong>60%</strong>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width: 60%; background: var(--primary);"></div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Revision</span>
+          <strong>25%</strong>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width: 25%; background: var(--warning);"></div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Break / Recovery</span>
+          <strong>15%</strong>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" style="width: 15%; background: var(--success);"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="ai-hub.html">
+      <i class="bi bi-stars"></i>
+      AI Hub
+    </a>
+
+    <a href="study-planner.html" class="active">
+      <i class="bi bi-calendar2-check"></i>
+      Planner
+    </a>
+
+    <a href="risk-prediction.html">
+      <i class="bi bi-activity"></i>
+      Risk
+    </a>
+
+    <a href="resources.html">
+      <i class="bi bi-journal-bookmark"></i>
+      Resources
+    </a>
+
+    <a href="analytics.html">
+      <i class="bi bi-bar-chart"></i>
+      Analytics
+    </a>
+  </nav>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="js/alfaisal.js"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Resources | Sifu</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <main class="app-shell">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+       <div class="logo-circle">
+  <img src="assets/logo.jpg" alt="Sifu Logo">
+</div>
+
+        <div>
+          <p class="eyebrow mb-0">AI Recommendation</p>
+          <h1 class="page-title">Resources</h1>
+        </div>
+      </div>
+
+      <a href="ai-hub.html" class="header-icon text-decoration-none" aria-label="Back to AI Hub">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </header>
+
+    <!-- Page Intro -->
+    <p class="page-subtitle">
+      Sifu recommends study materials based on your weak subjects, upcoming tasks,
+      deadlines, and academic progress.
+    </p>
+
+    <!-- AI Hero -->
+    <section class="ai-hero-card">
+      <span class="badge-soft">
+        <i class="bi bi-stars"></i>
+        Smart Resource Match
+      </span>
+
+      <h2>Recommended for Data Structures</h2>
+
+      <p>
+        Your current weak area is linked lists and stack operations. Sifu suggests
+        practicing these topics before moving to advanced questions.
+      </p>
+    </section>
+
+    <!-- Filters -->
+    <h2 class="section-title">Resource Filters</h2>
+
+    <section class="sifu-card">
+      <div class="resource-filter-grid">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="notes">Notes</button>
+        <button class="filter-btn" data-filter="video">Videos</button>
+        <button class="filter-btn" data-filter="practice">Practice</button>
+        <button class="filter-btn" data-filter="weak">Weak Areas</button>
+      </div>
+    </section>
+
+    <!-- Recommended Resources -->
+    <h2 class="section-title">Recommended Resources</h2>
+
+    <section id="resourceList">
+
+      <article class="sifu-card resource-card" data-type="notes">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi bi-file-earmark-text"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">Application Development UI Notes</h3>
+            <p class="card-text">
+              Review frontend structure, UI components, and form validation concepts.
+            </p>
+          </div>
+
+          <span class="badge-soft badge-danger">Urgent</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> Application Development</span>
+          <span><i class="bi bi-clock"></i> 20 min</span>
+        </div>
+      </article>
+
+      <article class="sifu-card resource-card" data-type="weak">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">Linked List Weak Area Revision</h3>
+            <p class="card-text">
+              Focused revision for linked list insertion, deletion, traversal, and stack usage.
+            </p>
+          </div>
+
+          <span class="badge-soft badge-warning">Weak Area</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> Data Structures</span>
+          <span><i class="bi bi-clock"></i> 35 min</span>
+        </div>
+      </article>
+
+      <article class="sifu-card resource-card" data-type="practice">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi bi-pencil-square"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">DSA Practice Questions</h3>
+            <p class="card-text">
+              Practice queue, stack, and linked list questions to improve problem-solving speed.
+            </p>
+          </div>
+
+          <span class="badge-soft badge-info">Practice</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> Data Structures</span>
+          <span><i class="bi bi-clock"></i> 45 min</span>
+        </div>
+      </article>
+
+      <article class="sifu-card resource-card" data-type="video">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi bi-play-circle"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">Computer Security Revision Video</h3>
+            <p class="card-text">
+              Quick revision for security goals, attack classes, and countermeasures.
+            </p>
+          </div>
+
+          <span class="badge-soft badge-success">Video</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> Computer Security</span>
+          <span><i class="bi bi-clock"></i> 25 min</span>
+        </div>
+      </article>
+
+      <article class="sifu-card resource-card" data-type="notes">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi bi-journal-text"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">Requirements Engineering Summary</h3>
+            <p class="card-text">
+              Short summary for requirements, use cases, and software modeling concepts.
+            </p>
+          </div>
+
+          <span class="badge-soft badge-info">Notes</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> Requirements Engineering</span>
+          <span><i class="bi bi-clock"></i> 30 min</span>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Empty State -->
+    <section class="sifu-card d-none" id="resourceEmpty">
+      <div class="text-center">
+        <div class="card-icon mx-auto mb-3">
+          <i class="bi bi-search"></i>
+        </div>
+        <h3 class="card-title">No resources found</h3>
+        <p class="card-text">
+          Try selecting another filter to view more recommended study materials.
+        </p>
+      </div>
+    </section>
+
+    <!-- AI Insight -->
+    <h2 class="section-title">AI Resource Insight</h2>
+
+    <section class="sifu-card">
+      <div class="card-row">
+        <div class="card-icon">
+          <i class="bi bi-lightbulb"></i>
+        </div>
+
+        <div>
+          <h3 class="card-title">Best next resource</h3>
+          <p class="card-text">
+            Start with the linked list weak area revision before attempting DSA
+            practice questions. This will reduce your academic risk score faster.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="ai-hub.html">
+      <i class="bi bi-stars"></i>
+      AI Hub
+    </a>
+
+    <a href="study-planner.html">
+      <i class="bi bi-calendar2-check"></i>
+      Planner
+    </a>
+
+    <a href="risk-prediction.html">
+      <i class="bi bi-activity"></i>
+      Risk
+    </a>
+
+    <a href="resources.html" class="active">
+      <i class="bi bi-journal-bookmark"></i>
+      Resources
+    </a>
+
+    <a href="analytics.html">
+      <i class="bi bi-bar-chart"></i>
+      Analytics
+    </a>
+  </nav>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom JS -->
+  <script src="js/alfaisal.js"></script>
+</body>
+</html>
