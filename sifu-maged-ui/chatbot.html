@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Sifu | Chatbot Assistant</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="app-shell">
+
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-circle">
+          <i class="bi bi-stars"></i>
+        </div>
+
+        <div>
+          <p class="eyebrow">Communication & Support</p>
+          <h1 class="page-title">Sifu Assistant</h1>
+        </div>
+      </div>
+
+      <button class="icon-btn" type="button">
+        <i class="bi bi-bell"></i>
+      </button>
+    </header>
+
+    <section class="hero-card">
+      <div>
+        <span class="ai-status">
+          <i class="bi bi-circle-fill"></i>
+          Online
+        </span>
+
+        <h2>AI Study Chatbot</h2>
+        <p>
+          Ask Sifu about study planning, deadlines, revision, weak subjects, or task priority.
+        </p>
+      </div>
+    </section>
+
+    <section class="card-box">
+      <h3 class="section-title">Suggested Questions</h3>
+
+      <div class="suggestion-grid">
+        <button class="suggestion-btn" type="button">How should I study for DSA?</button>
+        <button class="suggestion-btn" type="button">What task should I do first?</button>
+        <button class="suggestion-btn" type="button">Generate a revision plan</button>
+        <button class="suggestion-btn" type="button">How can I improve my study routine?</button>
+      </div>
+    </section>
+
+    <section class="card-box chat-card">
+      <div class="chat-header">
+        <div>
+          <h3 class="section-title mb-0">Chat</h3>
+          <p class="muted-text mb-0">Sifu gives study guidance instantly.</p>
+        </div>
+
+        <i class="bi bi-chat-dots-fill chat-icon"></i>
+      </div>
+
+      <div class="chat-box" id="chatMessages">
+        <div class="message-row ai">
+          <div class="message-bubble">
+            Hi Majid! I am Sifu Assistant. Ask me anything about your study plan, deadlines, or revision strategy.
+          </div>
+        </div>
+
+        <div class="message-row user">
+          <div class="message-bubble">
+            What should I focus on today?
+          </div>
+        </div>
+
+        <div class="message-row ai">
+          <div class="message-bubble">
+            Based on your upcoming deadlines, focus on Application Development first, then review Data Structures after 8 PM.
+          </div>
+        </div>
+      </div>
+
+      <form class="chat-form" id="chatForm">
+        <input 
+          type="text" 
+          id="chatInput" 
+          placeholder="Ask Sifu Assistant..." 
+          autocomplete="off"
+        >
+
+        <button class="primary-btn" type="submit">
+          <i class="bi bi-send"></i>
+        </button>
+      </form>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <i class="bi bi-house"></i>
+      <span>Home</span>
+    </a>
+
+    <a href="notifications.html" class="nav-item">
+      <i class="bi bi-bell"></i>
+      <span>Alerts</span>
+    </a>
+
+    <a href="chatbot.html" class="nav-item active">
+      <i class="bi bi-chat-dots"></i>
+      <span>Chatbot</span>
+    </a>
+
+    <a href="support.html" class="nav-item">
+      <i class="bi bi-question-circle"></i>
+      <span>Support</span>
+    </a>
+
+    <a href="feedback.html" class="nav-item">
+      <i class="bi bi-pencil-square"></i>
+      <span>Feedback</span>
+    </a>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
