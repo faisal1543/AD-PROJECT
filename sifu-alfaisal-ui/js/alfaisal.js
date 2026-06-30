@@ -2,6 +2,7 @@
    SIFU - Alfaisal Frontend JS
    AI Recommendation & Analytics
 ================================ */
+const API_BASE_URL = "http://localhost:5000";
 
 document.addEventListener("DOMContentLoaded", function () {
   setupStudyPlanner();
@@ -281,24 +282,57 @@ function setupAnalyticsDashboard() {
 
   if (refreshBtn) {
     refreshBtn.addEventListener("click", function () {
+      loadAnalyticsFromBackend(studyTimeChart, taskCompletionChart);
+    });
+  }
+
+  loadAnalyticsFromBackend(studyTimeChart, taskCompletionChart);
+}
+
+
+async function loadAnalyticsFromBackend(studyTimeChart, taskCompletionChart) {
+  try {
+    const overviewResponse = await fetch(`${API_BASE_URL}/api/analytics/overview/1`);
+    const overviewResult = await overviewResponse.json();
+
+    if (overviewResult.success) {
+      const data = overviewResult.data;
+
       const gpaValue = document.getElementById("gpaValue");
       const tasksValue = document.getElementById("tasksValue");
       const hoursValue = document.getElementById("hoursValue");
       const weakValue = document.getElementById("weakValue");
 
-      if (gpaValue) gpaValue.textContent = "3.52";
-      if (tasksValue) tasksValue.textContent = "16/20";
-      if (hoursValue) hoursValue.textContent = "22h";
-      if (weakValue) weakValue.textContent = "DSA";
+      if (gpaValue) gpaValue.textContent = data.gpa;
+      if (tasksValue) tasksValue.textContent = `${data.tasksDone}/${data.totalTasks}`;
+      if (hoursValue) hoursValue.textContent = `${data.studyHours}h`;
+      if (weakValue) weakValue.textContent = data.weakSubject;
+    }
 
-      studyTimeChart.data.datasets[0].data = [8, 6, 3, 5];
+    const studyTimeResponse = await fetch(`${API_BASE_URL}/api/analytics/study-time/1`);
+    const studyTimeResult = await studyTimeResponse.json();
+
+    if (studyTimeResult.success && studyTimeChart) {
+      studyTimeChart.data.labels = studyTimeResult.data.map((item) => item.subject);
+      studyTimeChart.data.datasets[0].data = studyTimeResult.data.map((item) => item.hours);
       studyTimeChart.update();
+    }
 
-      taskCompletionChart.data.datasets[0].data = [16, 3, 1];
+    const taskResponse = await fetch(`${API_BASE_URL}/api/analytics/task-completion/1`);
+    const taskResult = await taskResponse.json();
+
+    if (taskResult.success && taskCompletionChart) {
+      taskCompletionChart.data.datasets[0].data = [
+        taskResult.data.completed,
+        taskResult.data.pending,
+        taskResult.data.overdue
+      ];
       taskCompletionChart.update();
+    }
 
-      showToast("Analytics dashboard refreshed successfully.", "success");
-    });
+    showToast("Analytics data loaded from backend API.", "success");
+  } catch (error) {
+    console.log("Backend is not running. Using frontend prototype data.");
   }
 }
 
