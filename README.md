@@ -83,7 +83,8 @@ AD-PROJECT/
 | Backend Package Configuration | [package.json](backend/package.json) |
 | Backend Environment Example | [.env.example](backend/.env.example) |
 | Backend Documentation | [README.md](backend/README.md) |
-| Database Config Placeholder | [db.js](backend/config/db.js) |
+| Database Connection Pool (MySQL) | [db.js](backend/config/db.js) |
+| Database Schema | [schema.sql](backend/sql/schema.sql) |
 | AI Recommendation Routes | [aiRoutes.js](backend/routes/aiRoutes.js) |
 | Analytics Routes | [analyticsRoutes.js](backend/routes/analyticsRoutes.js) |
 | AI Recommendation Controller | [aiController.js](backend/controllers/aiController.js) |
@@ -95,7 +96,7 @@ AD-PROJECT/
 
 ## Alfaisal Backend API Summary
 
-The backend API supports the **AI Recommendation & Intelligence subsystem** and the **Analytics & Insights subsystem**.
+The backend API supports the **AI Recommendation & Intelligence subsystem** and the **Analytics & Insights subsystem**, backed by a real **MySQL database** (`sifu_db`).
 
 It provides endpoints for:
 
@@ -109,16 +110,31 @@ It provides endpoints for:
 - AI suggestions
 - Study plan generation
 
-The Analytics dashboard frontend is connected to the backend API using JavaScript `fetch()`. When the backend server is running, the dashboard loads GPA, task completion, study hours, weak subject, study time chart data, and task completion chart data from the backend API.
+The Analytics dashboard frontend is connected to the backend API using JavaScript `fetch()`. When the backend server is running, the dashboard loads GPA, task completion, study hours, weak subject, study time chart data, and task completion chart data directly from MySQL via the API.
 
 ---
 
 ## How to Run the Backend
 
-Open a terminal inside the project folder and run:
+**1. Create the database and load the schema:**
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS sifu_db"
+mysql -u root -p sifu_db < backend/sql/schema.sql
+```
+
+**2. Set up environment variables:**
 
 ```bash
 cd backend
+cp .env.example .env
+```
+
+Edit `.env` with your local MySQL credentials.
+
+**3. Install dependencies and run:**
+
+```bash
 npm install
 npm start
 ```
@@ -128,6 +144,8 @@ The backend server runs on:
 ```text
 http://localhost:5000
 ```
+
+You should see `MySQL connected successfully.` in the console if the database connection works.
 
 ---
 
@@ -157,7 +175,7 @@ http://localhost:5000
 
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/ai/risk/1` | Get academic risk prediction |
+| GET | `/api/ai/risk/1` | Get academic risk prediction (calculated from real DB data: overdue tasks, study hours, weakest subject) |
 | GET | `/api/ai/resources/1` | Get recommended study resources |
 | GET | `/api/ai/suggestions/1` | Get AI suggestions |
 | POST | `/api/ai/generate-plan` | Generate a personalized study plan |
@@ -179,9 +197,12 @@ Request body:
   "subject": "Data Structures",
   "hours": 3,
   "priority": "High",
-  "deadline": "2026-06-22"
+  "deadline": "2026-06-22",
+  "studentId": 1
 }
 ```
+
+`studentId` is optional — if provided, the generated plan is saved to the database (`generated_study_plans` table). If omitted, the plan is returned without being persisted.
 
 ---
 
@@ -195,6 +216,7 @@ Request body:
 - Chart.js
 - Node.js
 - Express.js
+- MySQL (mysql2)
 - CORS
 - dotenv
 - LocalStorage
@@ -207,11 +229,11 @@ The frontend uses prototype data to demonstrate the main functions of the Sifu -
 
 Alfaisal's part focuses on the **AI Recommendation & Intelligence subsystem** and the **Analytics & Insights subsystem**. The implemented pages allow students to access the AI Hub, generate personalized study plans, check academic risk prediction, receive study resource recommendations, and view academic analytics dashboards.
 
-Alfaisal also implemented a backend API prototype using **Node.js and Express.js**. The backend provides API routes for analytics overview, subject progress, study time distribution, task completion, weak areas, academic risk prediction, study resources, AI suggestions, and study plan generation.
+Alfaisal also implemented a full backend API using **Node.js and Express.js**, connected to a **MySQL database**. The backend provides API routes for analytics overview, subject progress, study time distribution, task completion, weak areas, academic risk prediction, study resources, AI suggestions, and study plan generation, with all data read from and written to real database tables (see [schema.sql](backend/sql/schema.sql)).
 
-The Analytics dashboard frontend is connected to the backend API using JavaScript `fetch()`. This allows dashboard values and chart data to load from the backend when the server is running.
+The Analytics dashboard frontend is connected to the backend API using JavaScript `fetch()`. This allows dashboard values and chart data to load live from the database when the server is running.
 
-The backend analytics controller calculates the weakest subject dynamically by selecting the subject with the lowest progress percentage from the prototype analytics data. Therefore, the weak subject is not only manually displayed on the frontend.
+The backend analytics controller calculates the weakest subject dynamically using a SQL query (`ORDER BY progress ASC LIMIT 1`) rather than reading from a fixed value. The risk prediction score is also calculated dynamically, combining overdue task count, total study hours, and weakest subject progress into a rule-based risk score, rather than being hardcoded.
 
 Abdulrahman's part focuses on the **User Management subsystem** and the **Academic Tracking subsystem**. The implemented pages allow students to access the welcome page, log in, sign up, view their profile, manage courses, manage academic tasks, view the home dashboard, and view a generated study schedule. The course and task pages use LocalStorage to support adding, editing, deleting, filtering, and updating prototype academic data.
 
@@ -230,4 +252,6 @@ In the complete system, these frontend pages and backend APIs can be connected t
 - `.env` is not uploaded.
 - `node_modules/` is not uploaded.
 - Analytics dashboard is connected to the backend API.
-- Dynamic weak-subject logic is implemented in the backend.
+- Backend is connected to a real MySQL database (`schema.sql` included).
+- Dynamic weak-subject logic is implemented in the backend (SQL-based).
+- Academic risk prediction is calculated dynamically, not hardcoded.
