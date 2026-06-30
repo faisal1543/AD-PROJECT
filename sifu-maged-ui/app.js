@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const API_BASE_URL = "http://localhost:5000/api/support";
+  const DEMO_STUDENT_ID = 1;
+
   const chatForm = document.getElementById("chatForm");
   const chatInput = document.getElementById("chatInput");
   const chatMessages = document.getElementById("chatMessages");
@@ -14,11 +17,25 @@ document.addEventListener("DOMContentLoaded", function () {
   const feedbackMessage = document.getElementById("feedbackMessage");
   const feedbackSuccess = document.getElementById("feedbackSuccess");
 
+  const settingKeys = [
+    "study_reminders",
+    "deadline_reminders",
+    "ai_suggestions",
+    "email_notifications"
+  ];
+
   function addMessage(text, sender) {
     if (!chatMessages) return;
 
     const row = document.createElement("div");
-    row.className = `message-row ${sender}`;
+
+    if (sender === "bot") {
+      row.className = "message-row ai";
+    } else if (sender === "ai") {
+      row.className = "message-row ai";
+    } else {
+      row.className = "message-row user";
+    }
 
     const bubble = document.createElement("div");
     bubble.className = "message-bubble";
@@ -30,71 +47,42 @@ document.addEventListener("DOMContentLoaded", function () {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
- function getFakeReply(message) {
-  const lowerMessage = message.toLowerCase();
+  async function loadChatHistory() {
+    if (!chatMessages) return;
 
-  if (
-    lowerMessage === "hi" ||
-    lowerMessage === "hello" ||
-    lowerMessage === "hey" ||
-    lowerMessage.includes("hi ")
-  ) {
-    return "Hi Majid! How can I help you today? You can ask me about study planning, task priority, deadlines, or revision.";
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/chat/messages/${DEMO_STUDENT_ID}`
+      );
+
+      const result = await response.json();
+
+      chatMessages.innerHTML = "";
+
+      if (!result.success || !result.data || result.data.length === 0) {
+        addMessage(
+          "Hi Maged! I am Sifu Assistant. Ask me anything about your study plan, deadlines, or revision strategy.",
+          "ai"
+        );
+        return;
+      }
+
+      result.data.forEach(function (message) {
+        addMessage(message.message_text, message.sender);
+      });
+    } catch (error) {
+      console.error("Chat history error:", error);
+
+      chatMessages.innerHTML = "";
+
+      addMessage(
+        "Backend connection failed. Please make sure the shared backend is running on port 5000.",
+        "ai"
+      );
+    }
   }
 
-  if (lowerMessage.includes("how are you")) {
-    return "I am ready to help you with your studies. Tell me what subject or task you want to work on.";
-  }
-
-  if (lowerMessage.includes("thank")) {
-    return "You are welcome! Keep going, and try to finish the most urgent task first.";
-  }
-
-  if (lowerMessage.includes("dsa") || lowerMessage.includes("data structure")) {
-    return "For DSA, I suggest starting with the topic you find hardest. Spend 45 minutes reviewing the concept, then solve 3 practice questions.";
-  }
-
-  if (lowerMessage.includes("application development") || lowerMessage.includes("ad project")) {
-    return "For Application Development, focus on finishing the frontend pages first. After that, test navigation, buttons, forms, and page consistency.";
-  }
-
-  if (lowerMessage.includes("task") || lowerMessage.includes("first") || lowerMessage.includes("priority")) {
-    return "Start with the task that has the closest deadline or highest marks. After that, move to revision or smaller tasks.";
-  }
-
-  if (lowerMessage.includes("revision") || lowerMessage.includes("revise")) {
-    return "A good revision plan is: review notes for 30 minutes, practice questions for 45 minutes, then summarize the weak points in your own words.";
-  }
-
-  if (lowerMessage.includes("plan") || lowerMessage.includes("schedule")) {
-    return "Here is a simple plan: finish urgent assignments first, take a short break, then revise one weak subject before the end of the day.";
-  }
-
-  if (lowerMessage.includes("deadline") || lowerMessage.includes("due")) {
-    return "Check the nearest deadline first. If it is due soon, focus only on completing and testing that task before starting anything new.";
-  }
-
-  if (lowerMessage.includes("exam") || lowerMessage.includes("quiz")) {
-    return "For exams or quizzes, focus on past questions, key definitions, and weak topics. Do short revision sessions instead of one long session.";
-  }
-
-  if (lowerMessage.includes("stress") || lowerMessage.includes("tired") || lowerMessage.includes("overwhelmed")) {
-    return "Take a short break first. Then choose only one small task to complete. Finishing one task will help reduce the pressure.";
-  }
-
-  const defaultReplies = [
-    "I understand. Can you tell me which subject or task you are working on?",
-    "That sounds important. Do you want help with planning, revision, or task priority?",
-    "Okay. I recommend checking your closest deadline first, then choosing the task with the highest priority.",
-    "Can you give me the subject name? I can suggest a better study plan based on it.",
-    "Let’s make it simple: choose one urgent task, work on it for 45 minutes, then take a short break."
-  ];
-
-  const randomIndex = Math.floor(Math.random() * defaultReplies.length);
-  return defaultReplies[randomIndex];
-}
-
-  function sendMessage(message) {
+  async function sendMessage(message) {
     if (!message || message.trim() === "") {
       return;
     }
@@ -105,13 +93,42 @@ document.addEventListener("DOMContentLoaded", function () {
       chatInput.value = "";
     }
 
-    setTimeout(function () {
-      const reply = getFakeReply(message);
-      addMessage(reply, "ai");
-    }, 700);
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          studentId: DEMO_STUDENT_ID,
+          message: message
+        })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        addMessage(
+          result.message || "Sorry, I could not send your message. Please try again.",
+          "ai"
+        );
+        return;
+      }
+
+      addMessage(result.data.botMessage.message_text, "ai");
+    } catch (error) {
+      console.error("Send message error:", error);
+
+      addMessage(
+        "Backend connection failed. Please start the shared backend server.",
+        "ai"
+      );
+    }
   }
 
   if (chatForm) {
+    loadChatHistory();
+
     chatForm.addEventListener("submit", function (event) {
       event.preventDefault();
       sendMessage(chatInput.value);
@@ -124,9 +141,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  function showToast() {
+  function showToast(message) {
     if (!toastMessage) return;
 
+    toastMessage.textContent = message || "Notification setting updated successfully.";
     toastMessage.classList.add("show");
 
     setTimeout(function () {
@@ -134,14 +152,77 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1800);
   }
 
-  toggleInputs.forEach(function (toggle) {
-    toggle.addEventListener("change", function () {
-      showToast();
+  async function loadNotificationSettings() {
+    if (toggleInputs.length === 0) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/notification-settings/${DEMO_STUDENT_ID}`
+      );
+
+      const result = await response.json();
+
+      if (!result.success || !result.data) {
+        return;
+      }
+
+      toggleInputs.forEach(function (toggle, index) {
+        const key = settingKeys[index];
+        toggle.checked = Boolean(result.data[key]);
+      });
+    } catch (error) {
+      console.error("Load notification settings error:", error);
+      showToast("Could not load notification settings.");
+    }
+  }
+
+  async function saveNotificationSettings() {
+    if (toggleInputs.length === 0) return;
+
+    const settings = {};
+
+    toggleInputs.forEach(function (toggle, index) {
+      const key = settingKeys[index];
+      settings[key] = toggle.checked;
     });
-  });
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/notification-settings/${DEMO_STUDENT_ID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(settings)
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast("Notification setting updated successfully.");
+      } else {
+        showToast(result.message || "Could not update notification setting.");
+      }
+    } catch (error) {
+      console.error("Save notification settings error:", error);
+      showToast("Backend connection failed.");
+    }
+  }
+
+  if (toggleInputs.length > 0) {
+    loadNotificationSettings();
+
+    toggleInputs.forEach(function (toggle) {
+      toggle.addEventListener("change", function () {
+        saveNotificationSettings();
+      });
+    });
+  }
 
   if (feedbackForm) {
-    feedbackForm.addEventListener("submit", function (event) {
+    feedbackForm.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       const categoryValue = feedbackCategory.value.trim();
@@ -159,12 +240,43 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      feedbackSuccess.classList.add("show");
-      feedbackForm.reset();
+      try {
+        const response = await fetch(`${API_BASE_URL}/feedback`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            studentId: DEMO_STUDENT_ID,
+            category: categoryValue,
+            rating: ratingValue,
+            subject: subjectValue,
+            message: messageValue
+          })
+        });
 
-      setTimeout(function () {
-        feedbackSuccess.classList.remove("show");
-      }, 3000);
+        const result = await response.json();
+
+        if (!result.success) {
+          alert(result.message || "Feedback could not be submitted.");
+          return;
+        }
+
+        if (feedbackSuccess) {
+          feedbackSuccess.classList.add("show");
+        }
+
+        feedbackForm.reset();
+
+        setTimeout(function () {
+          if (feedbackSuccess) {
+            feedbackSuccess.classList.remove("show");
+          }
+        }, 3000);
+      } catch (error) {
+        console.error("Feedback submit error:", error);
+        alert("Backend connection failed. Please start the shared backend server.");
+      }
     });
   }
 });

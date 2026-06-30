@@ -137,3 +137,241 @@ INSERT INTO ai_suggestions (student_id, title, reason, confidence) VALUES
   (1, 'Focus on Data Structures today', 'Lowest subject progress detected', 89),
   (1, 'Complete overdue tasks', 'Overdue tasks increase academic risk', 82);
   
+  -- ============================================================
+-- Maged Communication & Support Module
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS chatbot_messages (
+    message_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    sender ENUM('user', 'bot') NOT NULL,
+    message_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    notification_type ENUM('deadline', 'study_reminder', 'ai_suggestion', 'system') NOT NULL,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    status ENUM('unread', 'read') DEFAULT 'unread',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS notification_settings (
+    setting_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL UNIQUE,
+    study_reminders BOOLEAN DEFAULT TRUE,
+    deadline_reminders BOOLEAN DEFAULT TRUE,
+    ai_suggestions BOOLEAN DEFAULT TRUE,
+    email_notifications BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS feedback (
+    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    category ENUM(
+        'Chatbot issue',
+        'Notification issue',
+        'Study planner issue',
+        'Account problem',
+        'General feedback'
+    ) NOT NULL,
+    rating TINYINT NOT NULL,
+    subject VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS support_faqs (
+    faq_id INT PRIMARY KEY AUTO_INCREMENT,
+    question VARCHAR(255) NOT NULL,
+    answer TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS help_topics (
+    topic_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    icon VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO notification_settings (
+    student_id,
+    study_reminders,
+    deadline_reminders,
+    ai_suggestions,
+    email_notifications
+)
+SELECT
+    1,
+    TRUE,
+    TRUE,
+    TRUE,
+    FALSE
+WHERE EXISTS (
+    SELECT 1 FROM students WHERE id = 1
+)
+ON DUPLICATE KEY UPDATE
+    study_reminders = VALUES(study_reminders),
+    deadline_reminders = VALUES(deadline_reminders),
+    ai_suggestions = VALUES(ai_suggestions),
+    email_notifications = VALUES(email_notifications);
+
+INSERT INTO notifications (
+    student_id,
+    title,
+    message,
+    notification_type,
+    priority,
+    status
+)
+SELECT
+    1,
+    'Application Development Deadline',
+    'Project submission is due tomorrow. Complete your frontend part today.',
+    'deadline',
+    'high',
+    'unread'
+WHERE EXISTS (
+    SELECT 1 FROM students WHERE id = 1
+)
+AND NOT EXISTS (
+    SELECT 1 FROM notifications
+    WHERE student_id = 1
+    AND title = 'Application Development Deadline'
+);
+
+INSERT INTO notifications (
+    student_id,
+    title,
+    message,
+    notification_type,
+    priority,
+    status
+)
+SELECT
+    1,
+    'DSA Revision Reminder',
+    'Revise stacks and linked lists tonight at 8:00 PM.',
+    'study_reminder',
+    'medium',
+    'unread'
+WHERE EXISTS (
+    SELECT 1 FROM students WHERE id = 1
+)
+AND NOT EXISTS (
+    SELECT 1 FROM notifications
+    WHERE student_id = 1
+    AND title = 'DSA Revision Reminder'
+);
+
+INSERT INTO notifications (
+    student_id,
+    title,
+    message,
+    notification_type,
+    priority,
+    status
+)
+SELECT
+    1,
+    'AI Study Suggestion',
+    'Add one more study session for your weak subject this week.',
+    'ai_suggestion',
+    'low',
+    'read'
+WHERE EXISTS (
+    SELECT 1 FROM students WHERE id = 1
+)
+AND NOT EXISTS (
+    SELECT 1 FROM notifications
+    WHERE student_id = 1
+    AND title = 'AI Study Suggestion'
+);
+
+INSERT INTO support_faqs (question, answer)
+SELECT
+    'How do I reset my password?',
+    'Go to the login page and click Forgot Password. Then follow the reset steps using your UTM email.'
+WHERE NOT EXISTS (
+    SELECT 1 FROM support_faqs
+    WHERE question = 'How do I reset my password?'
+);
+
+INSERT INTO support_faqs (question, answer)
+SELECT
+    'Why am I not receiving reminders?',
+    'Check whether deadline reminders and study reminders are enabled in your notification settings.'
+WHERE NOT EXISTS (
+    SELECT 1 FROM support_faqs
+    WHERE question = 'Why am I not receiving reminders?'
+);
+
+INSERT INTO support_faqs (question, answer)
+SELECT
+    'How does the chatbot help me?',
+    'The chatbot gives study guidance, task priority suggestions, revision plans, and support for weak subjects.'
+WHERE NOT EXISTS (
+    SELECT 1 FROM support_faqs
+    WHERE question = 'How does the chatbot help me?'
+);
+
+INSERT INTO support_faqs (question, answer)
+SELECT
+    'How do I contact support?',
+    'Use the feedback page to submit your issue. The support team can review your message and respond later.'
+WHERE NOT EXISTS (
+    SELECT 1 FROM support_faqs
+    WHERE question = 'How do I contact support?'
+);
+
+INSERT INTO help_topics (title, description, icon)
+SELECT
+    'Getting Started',
+    'Use the bottom navigation to move between chatbot, alerts, support, and feedback pages.',
+    'rocket'
+WHERE NOT EXISTS (
+    SELECT 1 FROM help_topics
+    WHERE title = 'Getting Started'
+);
+
+INSERT INTO help_topics (title, description, icon)
+SELECT
+    'Using Sifu Chatbot',
+    'Ask study-related questions such as what task to do first or how to revise weak subjects.',
+    'chat'
+WHERE NOT EXISTS (
+    SELECT 1 FROM help_topics
+    WHERE title = 'Using Sifu Chatbot'
+);
+
+INSERT INTO help_topics (title, description, icon)
+SELECT
+    'Managing Notifications',
+    'Turn study reminders, deadline alerts, AI suggestions, and email notifications on or off.',
+    'bell'
+WHERE NOT EXISTS (
+    SELECT 1 FROM help_topics
+    WHERE title = 'Managing Notifications'
+);
+
+INSERT INTO help_topics (title, description, icon)
+SELECT
+    'Sending Feedback',
+    'Use the feedback form to report issues about chatbot, reminders, account, or study planner.',
+    'pencil'
+WHERE NOT EXISTS (
+    SELECT 1 FROM help_topics
+    WHERE title = 'Sending Feedback'
+);
