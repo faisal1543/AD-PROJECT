@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const aiRoutes = require("./routes/aiRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const supportRoutes = require("./routes/supportRoutes");
 
 const app = express();
 
@@ -13,13 +14,18 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({
     message: "Sifu Backend API is running",
-    developer: "Alfaisal",
-    modules: ["AI Recommendation & Intelligence", "Analytics & Insights"]
+    developer: "Team Sifu",
+    modules: [
+      "AI Recommendation & Intelligence",
+      "Analytics & Insights",
+      "Communication & Support"
+    ]
   });
 });
 
 app.use("/api/ai", aiRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/support", supportRoutes);
 
 const PORT = process.env.PORT || 5000;
 
