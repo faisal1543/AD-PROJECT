@@ -1,53 +1,44 @@
-const aiData = {
-  resources: [
-    {
-      id: 1,
-      title: "Application Development UI Notes",
-      type: "notes",
-      subject: "Application Development",
-      duration: "20 min",
-      priority: "Urgent"
-    },
-    {
-      id: 2,
-      title: "Linked List Weak Area Revision",
-      type: "weak",
-      subject: "Data Structures",
-      duration: "35 min",
-      priority: "Weak Area"
-    },
-    {
-      id: 3,
-      title: "DSA Practice Questions",
-      type: "practice",
-      subject: "Data Structures",
-      duration: "45 min",
-      priority: "Practice"
-    },
-    {
-      id: 4,
-      title: "Computer Security Revision Video",
-      type: "video",
-      subject: "Computer Security",
-      duration: "25 min",
-      priority: "Video"
-    }
-  ],
+const pool = require("../config/db");
 
-  suggestions: [
-    {
-      id: 1,
-      title: "Focus on Data Structures today",
-      reason: "Lowest subject progress detected",
-      confidence: 89
-    },
-    {
-      id: 2,
-      title: "Complete overdue tasks",
-      reason: "Overdue tasks increase academic risk",
-      confidence: 82
-    }
-  ]
+async function getResources(studentId) {
+  const [rows] = await pool.query(
+    "SELECT id, title, type, subject, duration, priority FROM ai_resources WHERE student_id = ?",
+    [studentId]
+  );
+  return rows;
+}
+
+async function getSuggestions(studentId) {
+  const [rows] = await pool.query(
+    "SELECT id, title, reason, confidence FROM ai_suggestions WHERE student_id = ?",
+    [studentId]
+  );
+  return rows;
+}
+
+async function saveGeneratedPlan(studentId, subject, hours, priority, deadline, aiMessage, confidence, schedule) {
+  const [planResult] = await pool.query(
+    `INSERT INTO generated_study_plans
+      (student_id, subject, hours, priority, deadline, ai_message, confidence)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [studentId, subject, hours, priority, deadline, aiMessage, confidence]
+  );
+
+  const planId = planResult.insertId;
+
+  const itemValues = schedule.map((item) => [planId, item.time, item.activity]);
+  if (itemValues.length > 0) {
+    await pool.query(
+      "INSERT INTO generated_study_plan_items (plan_id, time, activity) VALUES ?",
+      [itemValues]
+    );
+  }
+
+  return planId;
+}
+
+module.exports = {
+  getResources,
+  getSuggestions,
+  saveGeneratedPlan
 };
-
-module.exports = aiData;

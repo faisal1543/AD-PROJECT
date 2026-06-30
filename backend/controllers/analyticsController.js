@@ -1,77 +1,90 @@
-const analyticsData = require("../models/analyticsModel");
+const analyticsModel = require("../models/analyticsModel");
 
-function getWeakestSubject() {
-  const weakestSubject = analyticsData.subjectProgress.reduce((lowest, current) => {
-    return current.progress < lowest.progress ? current : lowest;
-  });
+exports.getOverview = async (req, res) => {
+  try {
+    const studentId = Number(req.params.studentId);
 
-  return weakestSubject;
-}
+    const [studyTime, taskCompletion, weakestSubject, gpa] = await Promise.all([
+      analyticsModel.getStudyTime(studentId),
+      analyticsModel.getTaskCompletion(studentId),
+      analyticsModel.getWeakestSubject(studentId),
+      analyticsModel.getStudentGpa(studentId)
+    ]);
 
-function getTotalStudyHours() {
-  return analyticsData.studyTime.reduce((total, item) => {
-    return total + item.hours;
-  }, 0);
-}
+    const studyHours = studyTime.reduce((total, item) => total + item.hours, 0);
 
-exports.getOverview = (req, res) => {
-  const weakestSubject = getWeakestSubject();
+    const overview = {
+      studentId,
+      gpa,
+      tasksDone: taskCompletion.completed,
+      totalTasks: taskCompletion.completed + taskCompletion.pending + taskCompletion.overdue,
+      studyHours,
+      weakSubject: weakestSubject ? weakestSubject.subject : null
+    };
 
-  const overview = {
-    studentId: Number(req.params.studentId),
-    gpa: analyticsData.overview.gpa,
-    tasksDone: analyticsData.taskCompletion.completed,
-    totalTasks:
-      analyticsData.taskCompletion.completed +
-      analyticsData.taskCompletion.pending +
-      analyticsData.taskCompletion.overdue,
-    studyHours: getTotalStudyHours(),
-    weakSubject: weakestSubject.subject
-  };
-
-  res.json({
-    success: true,
-    data: overview
-  });
+    res.json({ success: true, data: overview });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to load analytics overview." });
+  }
 };
 
-exports.getSubjectProgress = (req, res) => {
-  res.json({
-    success: true,
-    data: analyticsData.subjectProgress
-  });
+exports.getSubjectProgress = async (req, res) => {
+  try {
+    const studentId = Number(req.params.studentId);
+    const data = await analyticsModel.getSubjectProgress(studentId);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to load subject progress." });
+  }
 };
 
-exports.getStudyTime = (req, res) => {
-  res.json({
-    success: true,
-    data: analyticsData.studyTime
-  });
+exports.getStudyTime = async (req, res) => {
+  try {
+    const studentId = Number(req.params.studentId);
+    const data = await analyticsModel.getStudyTime(studentId);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to load study time." });
+  }
 };
 
-exports.getTaskCompletion = (req, res) => {
-  res.json({
-    success: true,
-    data: analyticsData.taskCompletion
-  });
+exports.getTaskCompletion = async (req, res) => {
+  try {
+    const studentId = Number(req.params.studentId);
+    const data = await analyticsModel.getTaskCompletion(studentId);
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to load task completion." });
+  }
 };
 
-exports.getWeakAreas = (req, res) => {
-  const weakestSubject = getWeakestSubject();
+exports.getWeakAreas = async (req, res) => {
+  try {
+    const studentId = Number(req.params.studentId);
+    const weakestSubject = await analyticsModel.getWeakestSubject(studentId);
 
-  const weakArea = {
-    subject: weakestSubject.subject,
-    topic:
-      weakestSubject.subject === "Data Structures"
-        ? "Linked List and Stack Operations"
-        : "Core topic revision required",
-    progress: weakestSubject.progress,
-    aiConfidence: 89,
-    recommendation: `Focus on ${weakestSubject.subject} because it has the lowest progress score. Complete one revision resource and one practice set today.`
-  };
+    if (!weakestSubject) {
+      return res.json({ success: true, data: [] });
+    }
 
-  res.json({
-    success: true,
-    data: [weakArea]
-  });
+    const weakArea = {
+      subject: weakestSubject.subject,
+      topic:
+        weakestSubject.subject === "Data Structures"
+          ? "Linked List and Stack Operations"
+          : "Core topic revision required",
+      progress: weakestSubject.progress,
+      aiConfidence: 89,
+      recommendation: `Focus on ${weakestSubject.subject} because it has the lowest progress score. Complete one revision resource and one practice set today.`
+    };
+
+    res.json({ success: true, data: [weakArea] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to load weak areas." });
+  }
 };

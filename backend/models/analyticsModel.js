@@ -1,67 +1,49 @@
-const analyticsData = {
-  overview: {
-    studentId: 1,
-    gpa: 3.45,
-    tasksDone: 14,
-    totalTasks: 20,
-    studyHours: 18,
-    weakSubject: "Data Structures"
-  },
+const pool = require("../config/db");
 
-  subjectProgress: [
-    {
-      subject: "Application Development",
-      progress: 82
-    },
-    {
-      subject: "Data Structures",
-      progress: 46
-    },
-    {
-      subject: "Computer Security",
-      progress: 67
-    },
-    {
-      subject: "Requirements Engineering",
-      progress: 74
-    }
-  ],
+async function getSubjectProgress(studentId) {
+  const [rows] = await pool.query(
+    "SELECT subject, progress FROM subject_progress WHERE student_id = ?",
+    [studentId]
+  );
+  return rows;
+}
 
-  studyTime: [
-    {
-      subject: "App Dev",
-      hours: 7
-    },
-    {
-      subject: "DSA",
-      hours: 4
-    },
-    {
-      subject: "Security",
-      hours: 3
-    },
-    {
-      subject: "Req Eng",
-      hours: 4
-    }
-  ],
+async function getStudyTime(studentId) {
+  const [rows] = await pool.query(
+    "SELECT subject, hours FROM study_time WHERE student_id = ?",
+    [studentId]
+  );
+  return rows;
+}
 
-  taskCompletion: {
-    completed: 14,
-    pending: 4,
-    overdue: 2
-  },
+async function getTaskCompletion(studentId) {
+  const [rows] = await pool.query(
+    "SELECT completed, pending, overdue FROM task_completion WHERE student_id = ?",
+    [studentId]
+  );
+  return rows[0] || { completed: 0, pending: 0, overdue: 0 };
+}
 
-  weakAreas: [
-    {
-      subject: "Data Structures",
-      topic: "Linked List and Stack Operations",
-      progress: 46,
-      aiConfidence: 89,
-      recommendation:
-        "Complete one weak-area revision resource and one practice set today."
-    }
-  ]
+async function getStudentGpa(studentId) {
+  const [rows] = await pool.query(
+    "SELECT gpa FROM students WHERE id = ?",
+    [studentId]
+  );
+  return rows[0] ? rows[0].gpa : null;
+}
+
+async function getWeakestSubject(studentId) {
+  const [rows] = await pool.query(
+    "SELECT subject, progress FROM subject_progress WHERE student_id = ? ORDER BY progress ASC LIMIT 1",
+    [studentId]
+  );
+  return rows[0] || null;
+}
+
+module.exports = {
+  getSubjectProgress,
+  getStudyTime,
+  getTaskCompletion,
+  getStudentGpa,
+  getWeakestSubject
 };
-
-module.exports = analyticsData;
