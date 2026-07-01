@@ -375,3 +375,87 @@ WHERE NOT EXISTS (
     SELECT 1 FROM help_topics
     WHERE title = 'Sending Feedback'
 );
+
+-- ============================================================
+-- Abdulrahman User Management + Academic Tracking Module
+-- Safe append-only schema
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(120) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('student', 'admin') DEFAULT 'student',
+  account_status ENUM('active', 'inactive') DEFAULT 'active',
+  faculty VARCHAR(100),
+  programme VARCHAR(100),
+  year_of_study VARCHAR(30),
+  current_semester VARCHAR(30) DEFAULT 'Semester 4',
+  total_credits VARCHAR(30) DEFAULT '72 / 120',
+  current_gpa DECIMAL(3,2) DEFAULT 3.45,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  token_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  token_hash VARCHAR(255) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  course_code VARCHAR(30) NOT NULL,
+  course_name VARCHAR(150) NOT NULL,
+  lecturer VARCHAR(100),
+  credits INT DEFAULT 3,
+  progress INT DEFAULT 0,
+  color VARCHAR(30) DEFAULT 'red',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS academic_tasks (
+  task_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  course_id INT,
+  course_code VARCHAR(30) NOT NULL,
+  task_title VARCHAR(150) NOT NULL,
+  status ENUM('Pending', 'Overdue', 'Completed') DEFAULT 'Pending',
+  priority ENUM('High', 'Medium', 'Low') DEFAULT 'Medium',
+  due_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS study_schedules (
+  schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  task_id INT,
+  study_day VARCHAR(50),
+  study_time VARCHAR(50),
+  ai_note VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (task_id) REFERENCES academic_tasks(task_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS study_sessions (
+  session_id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  course_id INT,
+  session_title VARCHAR(150),
+  session_date DATE,
+  start_time TIME,
+  end_time TIME,
+  completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE SET NULL
+);
