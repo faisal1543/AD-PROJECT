@@ -71,7 +71,7 @@ AD-PROJECT/
 | Feedback & Support Module | [feedback.html](sifu-maged-ui/feedback.html) |
 | Help Center Page | [help.html](sifu-maged-ui/help.html) |
 | Shared Styling | [style.css](sifu-maged-ui/css/style.css) |
-| JavaScript Interactions | [app.js](sifu-maged-ui/js/app.js) |
+| JavaScript Interactions | [app.js](sifu-maged-ui/app.js) |
 
 ---
 
@@ -91,6 +91,38 @@ AD-PROJECT/
 | Analytics Controller | [analyticsController.js](backend/controllers/analyticsController.js) |
 | AI Recommendation Model | [aiModel.js](backend/models/aiModel.js) |
 | Analytics Model | [analyticsModel.js](backend/models/analyticsModel.js) |
+
+---
+
+## Abdulrahman Backend API Index
+
+| Backend Module | Backend Script |
+|---|---|
+| Authentication Routes | [authRoutes.js](backend/routes/authRoutes.js) |
+| User Routes | [userRoutes.js](backend/routes/userRoutes.js) |
+| Course Routes | [courseRoutes.js](backend/routes/courseRoutes.js) |
+| Task Routes | [taskRoutes.js](backend/routes/taskRoutes.js) |
+| Dashboard Routes | [dashboardRoutes.js](backend/routes/dashboardRoutes.js) |
+| Schedule Routes | [scheduleRoutes.js](backend/routes/scheduleRoutes.js) |
+| Authentication Controller | [authController.js](backend/controllers/authController.js) |
+| User Controller | [userController.js](backend/controllers/userController.js) |
+| Course Controller | [courseController.js](backend/controllers/courseController.js) |
+| Task Controller | [taskController.js](backend/controllers/taskController.js) |
+| Dashboard Controller | [dashboardController.js](backend/controllers/dashboardController.js) |
+| Schedule Controller | [scheduleController.js](backend/controllers/scheduleController.js) |
+| User Model | [userModel.js](backend/models/userModel.js) |
+| Course Model | [courseModel.js](backend/models/courseModel.js) |
+| Task Model | [taskModel.js](backend/models/taskModel.js) |
+
+---
+
+## Maged Backend API Index
+
+| Backend Module | Backend Script |
+|---|---|
+| Support Routes (chat, notifications, feedback, help) | [supportRoutes.js](backend/routes/supportRoutes.js) |
+| Support Controller | [supportController.js](backend/controllers/supportController.js) |
+| Support Model | [supportModel.js](backend/models/supportModel.js) |
 
 ---
 
@@ -182,6 +214,80 @@ You should see `MySQL connected successfully.` in the console if the database co
 
 ---
 
+### Authentication APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/signup` | Register a new student account |
+| POST | `/api/auth/login` | Log in with email and password |
+
+---
+
+### User Management APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/users/:userId` | Get a student's profile details |
+| PUT | `/api/users/:userId` | Update a student's profile details |
+
+---
+
+### Course Management APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/courses/:userId` | Get all courses for a student |
+| POST | `/api/courses` | Add a new course |
+| PUT | `/api/courses/:courseId` | Update an existing course |
+| DELETE | `/api/courses/:courseId` | Delete a course |
+
+---
+
+### Task Management APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/tasks/:userId` | Get all academic tasks for a student |
+| POST | `/api/tasks` | Add a new task |
+| PUT | `/api/tasks/:taskId` | Update an existing task |
+| PATCH | `/api/tasks/:taskId/status` | Update a task's completion status |
+| DELETE | `/api/tasks/:taskId` | Delete a task |
+
+---
+
+### Dashboard APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/dashboard/:userId` | Get home dashboard summary (priority task counts, course progress, upcoming deadlines) |
+
+---
+
+### Schedule APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/schedule/:userId` | Get the generated study schedule for a student |
+
+---
+
+### Communication & Support APIs
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/support/chat/messages/:studentId` | Get chatbot message history |
+| POST | `/api/support/chat/messages` | Send a message to the chatbot and receive a reply |
+| GET | `/api/support/notifications/:studentId` | Get a student's notification feed |
+| PATCH | `/api/support/notifications/:notificationId/read` | Mark a notification as read |
+| GET | `/api/support/notification-settings/:studentId` | Get a student's notification preferences |
+| PUT | `/api/support/notification-settings/:studentId` | Update a student's notification preferences |
+| POST | `/api/support/feedback` | Submit feedback |
+| GET | `/api/support/feedback/:studentId` | Get feedback submitted by a student |
+| GET | `/api/support/faqs` | Get frequently asked questions |
+| GET | `/api/support/help-topics` | Get help center topics |
+
+---
+
 ## POST Study Plan Example
 
 Endpoint:
@@ -235,11 +341,11 @@ The Analytics dashboard frontend is connected to the backend API using JavaScrip
 
 The backend analytics controller calculates the weakest subject dynamically using a SQL query (`ORDER BY progress ASC LIMIT 1`) rather than reading from a fixed value. The risk prediction score is also calculated dynamically, combining overdue task count, total study hours, and weakest subject progress into a rule-based risk score, rather than being hardcoded.
 
-Abdulrahman's part focuses on the **User Management subsystem** and the **Academic Tracking subsystem**. The implemented pages allow students to access the welcome page, log in, sign up, view their profile, manage courses, manage academic tasks, view the home dashboard, and view a generated study schedule. The course and task pages use LocalStorage to support adding, editing, deleting, filtering, and updating prototype academic data.
+Abdulrahman's part focuses on the **User Management subsystem** and the **Academic Tracking subsystem**. The implemented pages allow students to access the welcome page, log in, sign up, view their profile, manage courses, manage academic tasks, view the home dashboard, and view a generated study schedule. Login, signup, profile, courses, tasks, the home dashboard, and the study schedule are all connected to live backend endpoints (`/api/auth`, `/api/users`, `/api/courses`, `/api/tasks`, `/api/dashboard`, `/api/schedule`) backed by MySQL. LocalStorage is used only as an offline fallback if the API request fails, so the pages keep working even if the backend server is temporarily unreachable.
 
-Maged's part focuses on the **Communication & Support subsystem**. The implemented pages allow students to use the AI chatbot assistant, view study reminders and deadline notifications, manage notification settings, access help and support categories, read frequently asked questions, submit feedback, and use the help center page. The chatbot page includes smart prototype replies using JavaScript, while the notification page includes toggle switches and toast messages. The feedback page includes form validation and a success message to demonstrate user support interaction.
+Maged's part focuses on the **Communication & Support subsystem**. The implemented pages allow students to use the AI chatbot assistant, view and manage notification settings, access help and support categories, read frequently asked questions, submit feedback, and use the help center page. The chatbot, notification settings, and feedback pages are connected to live backend endpoints (`/api/support/chat/messages`, `/api/support/notification-settings`, `/api/support/feedback`) backed by MySQL — chatbot replies, saved notification preferences, and submitted feedback are all persisted to real database tables. The help and support pages currently display static content; backend routes for FAQs and help topics (`/api/support/faqs`, `/api/support/help-topics`) exist but are not yet wired to those pages.
 
-In the complete system, these frontend pages and backend APIs can be connected to a database so that user accounts, courses, tasks, schedules, academic progress, notifications, chatbot records, feedback reports, analytics insights, and AI-generated outputs are based on each student's actual data.
+In the complete system, these frontend pages and backend APIs are connected to a real MySQL database so that user accounts, courses, tasks, schedules, chatbot records, and feedback reports are based on each student's actual data. Remaining gaps: academic risk prediction and study resource recommendations have working backend endpoints (`/api/ai/risk`, `/api/ai/resources`) that aren't yet called from `risk-prediction.html` and `resources.html` (both still show static/demo values), and the three subsystems don't yet share a single logged-in student ID — analytics, AI, and support pages currently use a hardcoded `studentId = 1` rather than the ID from Abdulrahman's login session.
 
 ---
 
