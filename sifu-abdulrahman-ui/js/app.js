@@ -1,5 +1,16 @@
+/* =========================================================
+   SIFU - Abdulrahman UI Backend-Connected App
+   Safe scope:
+   - Only affects pages that load sifu-abdulrahman-ui/js/app.js
+   - Does NOT call Faisal routes: /api/ai or /api/analytics
+   - Does NOT call Majid routes: /api/support
+   - Keeps the same HTML/CSS classes, so the frontend look stays the same
+   ========================================================= */
+
 (function () {
   "use strict";
+
+  const API_BASE = "http://localhost:5000";
 
   const STORE = {
     user: "sifu_user",
@@ -8,49 +19,127 @@
     loggedIn: "sifu_logged_in"
   };
 
-  const defaultUser = {
+  const fallbackUser = {
+    userId: 1,
     fullName: "UTM Student",
-    email: "student@utm.my",
+    email: "student@graduate.utm.my",
     faculty: "Faculty of Computing",
     programme: "Software Engineering",
     yearOfStudy: "Year 2",
+    currentSemester: "Semester 4",
+    totalCredits: "72 / 120",
+    currentGpa: "3.45",
     semester: "Semester 4",
     credits: "72 / 120",
     gpa: "3.45"
   };
 
-  const defaultCourses = [
-    { id: cryptoId(), code: "SCSE2243", name: "Application Development", lecturer: "Dr. Farhana", credits: 3, schedule: "Sun & Tue, 10:00 AM" },
-    { id: cryptoId(), code: "SCSJ2013", name: "Data Structures and Algorithms", lecturer: "Dr. Hanafi", credits: 3, schedule: "Mon & Wed, 2:00 PM" },
-    { id: cryptoId(), code: "SECJ2253", name: "Requirement Engineering", lecturer: "Dr. Aina", credits: 3, schedule: "Thu, 9:00 AM" },
-    { id: cryptoId(), code: "SCSR2043", name: "Computer Security", lecturer: "Dr. Hakim", credits: 3, schedule: "Tue, 8:00 PM" }
+  const fallbackCourses = [
+    {
+      id: "1",
+      code: "SCSE2243",
+      name: "Software Design & Architecture",
+      lecturer: "Dr. Ahmad Fadzil",
+      credits: 3,
+      progress: 72,
+      color: "red"
+    },
+    {
+      id: "2",
+      code: "SECJ2013",
+      name: "Software Engineering",
+      lecturer: "Prof. Norhayati Mohd",
+      credits: 3,
+      progress: 58,
+      color: "green"
+    },
+    {
+      id: "3",
+      code: "SCSJ2203",
+      name: "Data Structures & Algorithms",
+      lecturer: "Dr. Lim Boon Yian",
+      credits: 3,
+      progress: 45,
+      color: "salmon"
+    },
+    {
+      id: "4",
+      code: "SCST1223",
+      name: "Statistics for Computing",
+      lecturer: "Dr. Roslan Johari",
+      credits: 2,
+      progress: 85,
+      color: "dark"
+    }
   ];
 
-  const defaultTasks = [
-    { id: cryptoId(), title: "Complete UI coding", course: "SCSE2243", type: "Project", priority: "High", due: "2026-06-22", status: "Pending" },
-    { id: cryptoId(), title: "DSA linked list revision", course: "SCSJ2013", type: "Study", priority: "Medium", due: "2026-06-24", status: "Pending" },
-    { id: cryptoId(), title: "Architecture diagram check", course: "SECJ2253", type: "Assignment", priority: "High", due: "2026-06-25", status: "Completed" },
-    { id: cryptoId(), title: "Security notes summary", course: "SCSR2043", type: "Study", priority: "Low", due: "2026-06-27", status: "Pending" }
+  const fallbackTasks = [
+    {
+      id: "1",
+      title: "Software Design Report",
+      course: "SCSE2243",
+      status: "Pending",
+      priority: "High",
+      due: "2026-05-24"
+    },
+    {
+      id: "2",
+      title: "Lab Exercise 4 – Linked Lists",
+      course: "SCSJ2203",
+      status: "Overdue",
+      priority: "High",
+      due: "2026-05-22"
+    },
+    {
+      id: "3",
+      title: "UML Diagram Assignment",
+      course: "SECJ2013",
+      status: "Pending",
+      priority: "Medium",
+      due: "2026-05-28"
+    },
+    {
+      id: "4",
+      title: "Statistics Quiz 2",
+      course: "SCST1223",
+      status: "Pending",
+      priority: "Medium",
+      due: "2026-05-26"
+    },
+    {
+      id: "5",
+      title: "Requirements Specification Doc",
+      course: "SECJ2013",
+      status: "Completed",
+      priority: "High",
+      due: "2026-05-15"
+    },
+    {
+      id: "6",
+      title: "Probability Problem Set 1",
+      course: "SCST1223",
+      status: "Completed",
+      priority: "Low",
+      due: "2026-05-18"
+    }
   ];
 
   document.addEventListener("DOMContentLoaded", function () {
-    ensureDefaults();
-    activateCurrentNav();
     setupLogoFallback();
     setupPasswordToggles();
     setupInfoLinks();
     setupLogin();
     setupSignup();
     setupProfile();
-    setupCourses();
-    setupTasks();
-    setupCalendar();
-    setupSchedule();
+    setupCoursesPage();
+    setupTasksPage();
+    setupCalendarDashboardPage();
+    setupStudySchedulePage();
   });
 
-  function cryptoId() {
-    return "id_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-  }
+  /* ============================= */
+  /* HELPERS */
+  /* ============================= */
 
   function $(selector, parent = document) {
     return parent.querySelector(selector);
@@ -60,11 +149,11 @@
     return Array.from(parent.querySelectorAll(selector));
   }
 
-  function read(key, fallback) {
+  function read(key, fallback = null) {
     try {
       const value = localStorage.getItem(key);
       return value ? JSON.parse(value) : fallback;
-    } catch (error) {
+    } catch {
       return fallback;
     }
   }
@@ -73,33 +162,118 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function ensureDefaults() {
-    if (!localStorage.getItem(STORE.user)) write(STORE.user, defaultUser);
-    if (!localStorage.getItem(STORE.courses)) write(STORE.courses, defaultCourses);
-    if (!localStorage.getItem(STORE.tasks)) write(STORE.tasks, defaultTasks);
+  function isUtmEmail(email) {
+    return /^[^\s@]+@[^\s@]*utm\.my$/i.test(String(email || "").trim());
   }
 
-  function isUtmEmail(email) {
-    return /^[^\s@]+@[^\s@]*utm\.my$/i.test(email.trim());
+  function getCurrentUser() {
+    return read(STORE.user, fallbackUser);
+  }
+
+  function getCurrentUserId() {
+    const user = getCurrentUser();
+    return user?.userId || user?.id || localStorage.getItem("sifu_user_id") || "1";
+  }
+
+  function normalizeUser(user) {
+    const normalized = {
+      userId: user?.userId || user?.user_id || user?.id || "1",
+      fullName: user?.fullName || user?.full_name || "UTM Student",
+      email: user?.email || "student@graduate.utm.my",
+      role: user?.role || "student",
+      accountStatus: user?.accountStatus || user?.account_status || "active",
+      faculty: user?.faculty || "Faculty of Computing",
+      programme: user?.programme || "Software Engineering",
+      yearOfStudy: user?.yearOfStudy || user?.year_of_study || "Year 2",
+      currentSemester: user?.currentSemester || user?.current_semester || user?.semester || "Semester 4",
+      totalCredits: user?.totalCredits || user?.total_credits || user?.credits || "72 / 120",
+      currentGpa: user?.currentGpa || user?.current_gpa || user?.gpa || "3.45"
+    };
+
+    normalized.semester = normalized.currentSemester;
+    normalized.credits = normalized.totalCredits;
+    normalized.gpa = normalized.currentGpa;
+
+    return normalized;
+  }
+
+  function saveSessionUser(user) {
+    const normalized = normalizeUser(user);
+    write(STORE.user, normalized);
+    localStorage.setItem("sifu_user_id", normalized.userId);
+    write(STORE.loggedIn, true);
+  }
+
+  async function api(path, options = {}) {
+    const response = await fetch(API_BASE + path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok || data?.success === false) {
+      throw new Error(data?.message || `Backend request failed: ${response.status}`);
+    }
+
+    return data;
   }
 
   function showToast(message, type = "success") {
-    const toastEl = $("#sifuToast");
-    if (!toastEl) return;
+    const toast = document.getElementById("sifuToast");
+    const toastMessage = document.getElementById("toastMessage");
 
-    const body = $(".toast-body", toastEl);
-    const icon = $(".toast-icon", toastEl);
-    if (body) body.lastChild ? body.lastChild.textContent = message : body.append(message);
-    if (icon) {
-      icon.className = "toast-icon bi me-2 " + (type === "danger" ? "bi-exclamation-circle-fill" : type === "warning" ? "bi-exclamation-triangle-fill" : "bi-check-circle-fill");
+    if (toast && toastMessage) {
+      toastMessage.textContent = message;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1800);
+
+      return;
     }
 
-    toastEl.classList.remove("text-bg-success", "text-bg-danger", "text-bg-warning");
-    toastEl.classList.add(type === "danger" ? "text-bg-danger" : type === "warning" ? "text-bg-warning" : "text-bg-success");
+    console.log(message);
+  }
 
-    if (window.bootstrap && bootstrap.Toast) {
-      bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2200 }).show();
+  function setButtonLoading(button, isLoading, loadingText) {
+    if (!button) return;
+
+    if (isLoading) {
+      button.dataset.originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = loadingText;
+    } else {
+      button.disabled = false;
+      if (button.dataset.originalText) button.innerHTML = button.dataset.originalText;
     }
+  }
+
+  function setText(idOrSelector, value) {
+    const element = idOrSelector.startsWith("#")
+      ? document.querySelector(idOrSelector)
+      : document.getElementById(idOrSelector);
+
+    if (element) element.textContent = value;
+  }
+
+  function escapeHTML(text) {
+    return String(text || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function setupLogoFallback() {
@@ -112,27 +286,20 @@
     });
   }
 
-  function activateCurrentNav() {
-    const file = location.pathname.split("/").pop() || "index.html";
-    $all(".nav-item-sifu").forEach((link) => {
-      const linkFile = link.getAttribute("href");
-      if (linkFile === file) link.classList.add("active");
-    });
-  }
-
   function setupPasswordToggles() {
-    const toggles = [
+    [
       ["#toggleLoginPassword", "#loginPassword"],
       ["#toggleSignupPassword", "#signupPassword"],
       ["#toggleConfirmPassword", "#confirmPassword"]
-    ];
-
-    toggles.forEach(([buttonSelector, inputSelector]) => {
+    ].forEach(([buttonSelector, inputSelector]) => {
       const button = $(buttonSelector);
       const input = $(inputSelector);
+
       if (!button || !input) return;
+
       button.addEventListener("click", () => {
         input.type = input.type === "password" ? "text" : "password";
+
         const icon = $("i", button);
         if (icon) icon.className = input.type === "password" ? "bi bi-eye" : "bi bi-eye-slash";
       });
@@ -140,45 +307,83 @@
   }
 
   function setupInfoLinks() {
-    $all("[data-info]").forEach((item) => {
-      item.addEventListener("click", (event) => {
+    $all("[data-info]").forEach((link) => {
+      link.addEventListener("click", function (event) {
         event.preventDefault();
-        showToast(item.dataset.info || "This section is ready for the next subsystem.", "warning");
+        showToast(link.dataset.info || "This feature will be connected after merge.", "warning");
       });
     });
   }
+
+  function openModal(modal) {
+    if (!modal) return;
+    modal.classList.add("show");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  /* ============================= */
+  /* AUTH */
+  /* ============================= */
 
   function setupLogin() {
     const form = $("#loginForm");
     if (!form) return;
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
+
       const email = $("#loginEmail");
       const password = $("#loginPassword");
+      const submitButton = form.querySelector("[type='submit']");
       let valid = true;
 
       if (!email.value.trim() || !isUtmEmail(email.value)) {
         email.classList.add("is-invalid");
         valid = false;
-      } else email.classList.remove("is-invalid");
+      } else {
+        email.classList.remove("is-invalid");
+      }
 
       if (!password.value.trim()) {
         password.classList.add("is-invalid");
         valid = false;
-      } else password.classList.remove("is-invalid");
+      } else {
+        password.classList.remove("is-invalid");
+      }
 
       if (!valid) {
         showToast("Please enter a valid UTM email and password.", "danger");
         return;
       }
 
-      const user = read(STORE.user, defaultUser);
-      user.email = email.value.trim();
-      write(STORE.user, user);
-      write(STORE.loggedIn, true);
-      showToast("Login successful. Opening profile...");
-      setTimeout(() => location.href = "calendar.html", 700);
+      try {
+        setButtonLoading(submitButton, true, "Logging in...");
+
+        const data = await api("/api/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email: email.value.trim(),
+            password: password.value
+          })
+        });
+
+        saveSessionUser(data.user);
+        showToast("Login successful. Opening dashboard...");
+
+        setTimeout(() => {
+          location.href = "calendar.html";
+        }, 700);
+      } catch (error) {
+        showToast(error.message || "Login failed. Please check your backend.", "danger");
+      } finally {
+        setButtonLoading(submitButton, false);
+      }
     });
   }
 
@@ -186,8 +391,9 @@
     const form = $("#signupForm");
     if (!form) return;
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
+
       const fullName = $("#fullName");
       const email = $("#signupEmail");
       const faculty = $("#faculty");
@@ -195,634 +401,170 @@
       const year = $("#yearOfStudy");
       const password = $("#signupPassword");
       const confirm = $("#confirmPassword");
+      const submitButton = form.querySelector("[type='submit']");
 
       const fields = [fullName, faculty, programme, year, password, confirm];
       let valid = true;
 
       fields.forEach((field) => {
-        if (!field.value.trim()) {
-          field.classList.add("is-invalid");
+        if (!field || !field.value.trim()) {
+          field?.classList.add("is-invalid");
           valid = false;
-        } else field.classList.remove("is-invalid");
+        } else {
+          field.classList.remove("is-invalid");
+        }
       });
 
       if (!email.value.trim() || !isUtmEmail(email.value)) {
         email.classList.add("is-invalid");
         valid = false;
-      } else email.classList.remove("is-invalid");
+      } else {
+        email.classList.remove("is-invalid");
+      }
 
       if (password.value !== confirm.value || !confirm.value.trim()) {
         confirm.classList.add("is-invalid");
         valid = false;
-      } else confirm.classList.remove("is-invalid");
+      } else {
+        confirm.classList.remove("is-invalid");
+      }
 
       if (!valid) {
         showToast("Check the form fields before signing up.", "danger");
         return;
       }
 
-      write(STORE.user, {
-        fullName: fullName.value.trim(),
-        email: email.value.trim(),
-        faculty: faculty.value,
-        programme: programme.value.trim(),
-        yearOfStudy: year.value,
-        semester: "Semester 4",
-        credits: "72 / 120",
-        gpa: "3.45"
-      });
-      write(STORE.loggedIn, true);
-      showToast("Account created. Opening profile...");
-      setTimeout(() => location.href = "calendar.html", 800);
+      try {
+        setButtonLoading(submitButton, true, "Creating account...");
+
+        const data = await api("/api/auth/signup", {
+          method: "POST",
+          body: JSON.stringify({
+            fullName: fullName.value.trim(),
+            email: email.value.trim(),
+            password: password.value,
+            faculty: faculty.value,
+            programme: programme.value.trim(),
+            yearOfStudy: year.value
+          })
+        });
+
+        saveSessionUser(data.user);
+        showToast("Account created. Opening dashboard...");
+
+        setTimeout(() => {
+          location.href = "calendar.html";
+        }, 800);
+      } catch (error) {
+        showToast(error.message || "Signup failed. Please check your backend.", "danger");
+      } finally {
+        setButtonLoading(submitButton, false);
+      }
     });
   }
 
-  function setupProfile() {
+  /* ============================= */
+  /* PROFILE */
+  /* ============================= */
+
+  async function setupProfile() {
     if (!$("#profileName")) return;
 
-    const user = read(STORE.user, defaultUser);
-    const courses = read(STORE.courses, defaultCourses);
-    const tasks = read(STORE.tasks, defaultTasks);
-
-    setText("#profileName", user.fullName);
-    setText("#profileProgrammeYear", `${user.programme}, ${user.yearOfStudy}`);
-    setText("#profileEmail", user.email);
-    setText("#currentSemester", user.semester);
-    setText("#totalCredits", user.credits);
-    setText("#currentGpa", user.gpa);
-    setText("#activeCourses", courses.length.toString());
-    setText("#activeTasks", tasks.filter((task) => task.status !== "Completed").length.toString());
-
     $all("[data-logout]").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", function () {
+        localStorage.removeItem(STORE.user);
+        localStorage.removeItem("sifu_user_id");
         write(STORE.loggedIn, false);
         showToast("Logged out successfully.");
-        setTimeout(() => location.href = "login.html", 700);
-      });
-    });
-  }
 
-  function setText(selector, text) {
-    const element = $(selector);
-    if (element) element.textContent = text;
-  }
-
-  function setupCourses() {
-    const list = $("#courseList");
-    if (!list) return;
-
-    const form = $("#courseForm");
-    const search = $("#courseSearch");
-    const modalEl = $("#courseModal");
-    const modalTitle = $("#courseModalLabel");
-
-    renderCourses();
-
-    $all("[data-course-new]").forEach((button) => {
-      button.addEventListener("click", () => {
-        form.reset();
-        delete form.dataset.editingId;
-        if (modalTitle) modalTitle.textContent = "Add Course";
+        setTimeout(() => {
+          location.href = "login.html";
+        }, 700);
       });
     });
 
-    if (search) search.addEventListener("input", renderCourses);
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      if (!form.checkValidity()) {
-        form.classList.add("was-validated");
-        showToast("Please complete all course fields.", "danger");
-        return;
-      }
-
-      const courses = read(STORE.courses, defaultCourses);
-      const newCourse = {
-        id: form.dataset.editingId || cryptoId(),
-        code: $("#courseCode").value.trim().toUpperCase(),
-        name: $("#courseName").value.trim(),
-        lecturer: $("#lecturerName").value.trim(),
-        credits: Number($("#creditHours").value),
-        schedule: $("#classSchedule").value.trim()
-      };
-
-      const index = courses.findIndex((course) => course.id === newCourse.id);
-      if (index >= 0) {
-        courses[index] = newCourse;
-        showToast("Course updated successfully.");
-      } else {
-        courses.push(newCourse);
-        showToast("Course added successfully.");
-      }
-
-      write(STORE.courses, courses);
-      form.classList.remove("was-validated");
-      form.reset();
-      delete form.dataset.editingId;
-      if (modalTitle) modalTitle.textContent = "Add Course";
-      closeModal(modalEl);
-      renderCourses();
-    });
-
-    list.addEventListener("click", (event) => {
-      const editButton = event.target.closest("[data-edit-course]");
-      const deleteButton = event.target.closest("[data-delete-course]");
-
-      if (editButton) {
-        const courses = read(STORE.courses, defaultCourses);
-        const course = courses.find((item) => item.id === editButton.dataset.editCourse);
-        if (!course) return;
-        $("#courseCode").value = course.code;
-        $("#courseName").value = course.name;
-        $("#lecturerName").value = course.lecturer;
-        $("#creditHours").value = course.credits;
-        $("#classSchedule").value = course.schedule;
-        form.dataset.editingId = course.id;
-        if (modalTitle) modalTitle.textContent = "Edit Course";
-        openModal(modalEl);
-      }
-
-      if (deleteButton) {
-        const id = deleteButton.dataset.deleteCourse;
-        const courses = read(STORE.courses, defaultCourses).filter((course) => course.id !== id);
-        write(STORE.courses, courses);
-        showToast("Course deleted.", "warning");
-        renderCourses();
-      }
-    });
-
-    function renderCourses() {
-      const courses = read(STORE.courses, defaultCourses);
-      const term = (search?.value || "").trim().toLowerCase();
-      const filtered = courses.filter((course) => {
-        return [course.code, course.name, course.lecturer, course.schedule].join(" ").toLowerCase().includes(term);
-      });
-
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty-state"><i class="bi bi-search"></i><p class="mb-0 mt-2">No courses found. Add a new course or clear the search.</p></div>`;
-        return;
-      }
-
-      list.innerHTML = filtered.map((course) => `
-        <article class="course-card">
-          <div class="d-flex justify-content-between align-items-start gap-3">
-            <div>
-              <span class="status-badge badge-primary mb-2">${escapeHtml(course.code)}</span>
-              <h3 class="h5 fw-bold mb-1">${escapeHtml(course.name)}</h3>
-              <p class="small muted-text mb-1"><i class="bi bi-person-video3 me-1"></i>${escapeHtml(course.lecturer)}</p>
-              <p class="small muted-text mb-0"><i class="bi bi-clock me-1"></i>${escapeHtml(course.schedule)} · ${course.credits} credits</p>
-            </div>
-          </div>
-          <div class="card-actions">
-            <button class="action-btn" type="button" data-edit-course="${course.id}"><i class="bi bi-pencil-square me-1"></i>Edit</button>
-            <button class="action-btn" type="button" data-delete-course="${course.id}"><i class="bi bi-trash me-1"></i>Delete</button>
-          </div>
-        </article>
-      `).join("");
-    }
-  }
-
-  function setupTasks() {
-    const list = $("#taskList");
-    if (!list) return;
-
-    const form = $("#taskForm");
-    const modalEl = $("#taskModal");
-    const modalTitle = $("#taskModalLabel");
-    let activeFilter = "All";
-
-    renderTasks();
-
-    $all("[data-task-new]").forEach((button) => {
-      button.addEventListener("click", () => {
-        form.reset();
-        delete form.dataset.editingId;
-        if (modalTitle) modalTitle.textContent = "Add Academic Task";
-      });
-    });
-
-    $all("[data-filter]").forEach((button) => {
-      button.addEventListener("click", () => {
-        $all("[data-filter]").forEach((pill) => pill.classList.remove("active"));
-        button.classList.add("active");
-        activeFilter = button.dataset.filter;
-        renderTasks();
-      });
-    });
-
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      if (!form.checkValidity()) {
-        form.classList.add("was-validated");
-        showToast("Please complete all task fields.", "danger");
-        return;
-      }
-
-      const tasks = read(STORE.tasks, defaultTasks);
-      const task = {
-        id: form.dataset.editingId || cryptoId(),
-        title: $("#taskTitle").value.trim(),
-        course: $("#taskCourse").value.trim().toUpperCase(),
-        type: $("#taskType").value,
-        priority: $("#taskPriority").value,
-        due: $("#taskDue").value,
-        status: form.dataset.editingId ? (tasks.find((item) => item.id === form.dataset.editingId)?.status || "Pending") : "Pending"
-      };
-
-      const index = tasks.findIndex((item) => item.id === task.id);
-      if (index >= 0) {
-        tasks[index] = task;
-        showToast("Task updated successfully.");
-      } else {
-        tasks.push(task);
-        showToast("Task added successfully.");
-      }
-
-      write(STORE.tasks, tasks);
-      form.classList.remove("was-validated");
-      form.reset();
-      delete form.dataset.editingId;
-      if (modalTitle) modalTitle.textContent = "Add Academic Task";
-      closeModal(modalEl);
-      renderTasks();
-    });
-
-    list.addEventListener("click", (event) => {
-      const completeButton = event.target.closest("[data-complete-task]");
-      const editButton = event.target.closest("[data-edit-task]");
-      const deleteButton = event.target.closest("[data-delete-task]");
-      const tasks = read(STORE.tasks, defaultTasks);
-
-      if (completeButton) {
-        const task = tasks.find((item) => item.id === completeButton.dataset.completeTask);
-        if (!task) return;
-        task.status = task.status === "Completed" ? "Pending" : "Completed";
-        write(STORE.tasks, tasks);
-        showToast(task.status === "Completed" ? "Task marked as completed." : "Task moved back to pending.");
-        renderTasks();
-      }
-
-      if (editButton) {
-        const task = tasks.find((item) => item.id === editButton.dataset.editTask);
-        if (!task) return;
-        $("#taskTitle").value = task.title;
-        $("#taskCourse").value = task.course;
-        $("#taskType").value = task.type;
-        $("#taskPriority").value = task.priority;
-        $("#taskDue").value = task.due;
-        form.dataset.editingId = task.id;
-        if (modalTitle) modalTitle.textContent = "Edit Academic Task";
-        openModal(modalEl);
-      }
-
-      if (deleteButton) {
-        const updatedTasks = tasks.filter((item) => item.id !== deleteButton.dataset.deleteTask);
-        write(STORE.tasks, updatedTasks);
-        showToast("Task deleted.", "warning");
-        renderTasks();
-      }
-    });
-
-    function renderTasks() {
-      const tasks = read(STORE.tasks, defaultTasks);
-      const sorted = tasks.slice().sort((a, b) => new Date(a.due) - new Date(b.due));
-      const filtered = sorted.filter((task) => {
-        if (activeFilter === "All") return true;
-        if (activeFilter === "High") return task.priority === "High";
-        return task.status === activeFilter;
-      });
-
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty-state"><i class="bi bi-check2-circle"></i><p class="mb-0 mt-2">No tasks in this filter.</p></div>`;
-        return;
-      }
-
-      list.innerHTML = filtered.map((task) => {
-        const priorityClass = task.priority === "High" ? "badge-danger" : task.priority === "Medium" ? "badge-warning" : "badge-success";
-        const statusClass = task.status === "Completed" ? "badge-success" : isOverdue(task.due) ? "badge-danger" : "badge-primary";
-        const statusText = task.status === "Completed" ? "Completed" : isOverdue(task.due) ? "Overdue" : "Pending";
-        return `
-          <article class="task-card">
-            <div class="d-flex justify-content-between align-items-start gap-3">
-              <div>
-                <div class="d-flex flex-wrap gap-2 mb-2">
-                  <span class="status-badge ${priorityClass}">${escapeHtml(task.priority)}</span>
-                  <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1">${escapeHtml(task.title)}</h3>
-                <p class="small muted-text mb-0"><i class="bi bi-journal-text me-1"></i>${escapeHtml(task.course)} · ${escapeHtml(task.type)} · Due ${formatDate(task.due)}</p>
-              </div>
-            </div>
-            <div class="card-actions">
-              <button class="action-btn" type="button" data-complete-task="${task.id}"><i class="bi bi-check2-circle me-1"></i>${task.status === "Completed" ? "Undo" : "Complete"}</button>
-              <button class="action-btn" type="button" data-edit-task="${task.id}"><i class="bi bi-pencil-square me-1"></i>Edit</button>
-              <button class="action-btn" type="button" data-delete-task="${task.id}"><i class="bi bi-trash me-1"></i>Delete</button>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-  }
-
-  function setupCalendar() {
-    const list = $("#deadlineList");
-    if (!list) return;
-
-    const tasks = read(STORE.tasks, defaultTasks)
-      .slice()
-      .sort((a, b) => new Date(a.due) - new Date(b.due))
-      .slice(0, 5);
-
-    if (!tasks.length) {
-      list.innerHTML = `<div class="empty-state">No deadlines yet. Add tasks to populate the calendar.</div>`;
-      return;
-    }
-
-    list.innerHTML = tasks.map((task) => {
-      const badge = task.status === "Completed" ? "badge-success" : task.priority === "High" ? "badge-danger" : "badge-warning";
-      return `
-        <article class="deadline-card">
-          <div class="d-flex justify-content-between align-items-start gap-2">
-            <div>
-              <strong>${escapeHtml(task.title)}</strong>
-              <p class="small muted-text mb-0 mt-1">${escapeHtml(task.course)} · ${escapeHtml(task.type)}</p>
-            </div>
-            <span class="status-badge ${badge}">${formatDate(task.due)}</span>
-          </div>
-        </article>
-      `;
-    }).join("");
-  }
-
-  function setupSchedule() {
-    const list = $("#scheduleList");
-    if (!list) return;
-
-    const refreshButton = $("#refreshSchedule");
-    if (refreshButton) {
-      refreshButton.addEventListener("click", () => {
-        renderSchedule(true);
-        showToast("Schedule refreshed from current tasks.");
-      });
-    }
-
-    renderSchedule(false);
-
-    function renderSchedule(force) {
-      const tasks = read(STORE.tasks, defaultTasks)
-        .filter((task) => task.status !== "Completed")
-        .sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority) || new Date(a.due) - new Date(b.due))
-        .slice(0, 4);
-
-      if (!tasks.length) {
-        list.innerHTML = `<div class="empty-state">All tasks are completed. Add a new task to generate today's schedule.</div>`;
-        return;
-      }
-
-      const times = ["9:00 AM", "11:00 AM", "2:00 PM", "8:00 PM"];
-      list.innerHTML = tasks.map((task, index) => {
-        const statusClass = index === 0 ? "badge-primary" : index === 1 ? "badge-warning" : "badge-success";
-        const label = index === 0 ? "Planned" : index === 1 ? "Next" : "Later";
-        return `
-          <article class="schedule-item">
-            <span class="timeline-point"></span>
-            <div class="d-flex justify-content-between align-items-start gap-3">
-              <div>
-                <h3 class="h6 fw-bold mb-1">${escapeHtml(task.course)}: ${escapeHtml(task.title)}</h3>
-                <p class="small muted-text mb-2">Focus on this ${escapeHtml(task.type.toLowerCase())} before ${formatDate(task.due)}.</p>
-                <span class="status-badge ${statusClass}"><i class="bi bi-clock"></i>${label}</span>
-              </div>
-              <strong class="small">${times[index]}</strong>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-  }
-
-  function openModal(modalEl) {
-    if (!modalEl) return;
-    if (window.bootstrap && bootstrap.Modal) {
-      bootstrap.Modal.getOrCreateInstance(modalEl).show();
-    }
-  }
-
-  function closeModal(modalEl) {
-    if (!modalEl) return;
-    if (window.bootstrap && bootstrap.Modal) {
-      bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-    }
-  }
-
-  function priorityRank(priority) {
-    return priority === "High" ? 1 : priority === "Medium" ? 2 : 3;
-  }
-
-  function isOverdue(date) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return new Date(date) < today;
-  }
-
-  function formatDate(date) {
-    if (!date) return "No date";
-    return new Date(date + "T00:00:00").toLocaleDateString("en-MY", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-  }
-
-  function escapeHtml(value) {
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-})();
-/* ============================= */
-/* COURSES + TASKS FUNCTIONALITY */
-/* ============================= */
-
-(function () {
-  const COURSE_KEY = "sifu_courses";
-  const TASK_KEY = "sifu_tasks";
-
-  const defaultCoursesUI = [
-    {
-      id: makeId(),
-      code: "SCSE2243",
-      name: "Software Design & Architecture",
-      lecturer: "Dr. Ahmad Fadzil",
-      credits: 3,
-      progress: 72,
-      color: "red"
-    },
-    {
-      id: makeId(),
-      code: "SECJ2013",
-      name: "Software Engineering",
-      lecturer: "Prof. Norhayati Mohd",
-      credits: 3,
-      progress: 58,
-      color: "green"
-    },
-    {
-      id: makeId(),
-      code: "SCSJ2203",
-      name: "Data Structures & Algorithms",
-      lecturer: "Dr. Lim Boon Yian",
-      credits: 3,
-      progress: 45,
-      color: "salmon"
-    },
-    {
-      id: makeId(),
-      code: "SCST1223",
-      name: "Statistics for Computing",
-      lecturer: "Dr. Roslan Johari",
-      credits: 2,
-      progress: 85,
-      color: "dark"
-    }
-  ];
-
-  const defaultTasksUI = [
-    {
-      id: makeId(),
-      title: "Software Design Report",
-      course: "SCSE2243",
-      status: "Pending",
-      priority: "High",
-      due: "2026-05-24"
-    },
-    {
-      id: makeId(),
-      title: "Lab Exercise 4 – Linked Lists",
-      course: "SCSJ2203",
-      status: "Overdue",
-      priority: "High",
-      due: "2026-05-22"
-    },
-    {
-      id: makeId(),
-      title: "UML Diagram Assignment",
-      course: "SECJ2013",
-      status: "Pending",
-      priority: "Medium",
-      due: "2026-05-28"
-    },
-    {
-      id: makeId(),
-      title: "Statistics Quiz 2",
-      course: "SCST1223",
-      status: "Pending",
-      priority: "Medium",
-      due: "2026-05-26"
-    },
-    {
-      id: makeId(),
-      title: "Requirements Specification Doc",
-      course: "SECJ2013",
-      status: "Completed",
-      priority: "High",
-      due: "2026-05-15"
-    },
-    {
-      id: makeId(),
-      title: "Probability Problem Set 1",
-      course: "SCST1223",
-      status: "Completed",
-      priority: "Low",
-      due: "2026-05-18"
-    }
-  ];
-
-  document.addEventListener("DOMContentLoaded", function () {
-    setupTrackingInfoLinks();
-    setupCoursesPage();
-    setupTasksPage();
-  });
-
-  function makeId() {
-    return "id_" + Math.random().toString(36).slice(2, 10);
-  }
-
-  function readData(key, fallback) {
     try {
-      const value = localStorage.getItem(key);
-      return value ? JSON.parse(value) : fallback;
-    } catch {
-      return fallback;
+      const userId = getCurrentUserId();
+
+      const [profileData, coursesData, tasksData] = await Promise.all([
+        api(`/api/users/${userId}`),
+        api(`/api/courses/${userId}`),
+        api(`/api/tasks/${userId}`)
+      ]);
+
+      const user = normalizeUser(profileData.user);
+      const courses = coursesData.courses || [];
+      const tasks = tasksData.tasks || [];
+
+      saveSessionUser(user);
+      write(STORE.courses, courses);
+      write(STORE.tasks, tasks);
+
+      renderProfile(user, courses, tasks);
+    } catch (error) {
+      const user = getCurrentUser();
+      const courses = read(STORE.courses, fallbackCourses);
+      const tasks = read(STORE.tasks, fallbackTasks);
+
+      renderProfile(user, courses, tasks);
+      showToast("Profile loaded from saved data. Backend not reachable.", "warning");
     }
   }
 
-  function writeData(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+  function renderProfile(user, courses, tasks) {
+    const normalized = normalizeUser(user);
+
+    setText("#profileName", normalized.fullName);
+    setText("#profileProgrammeYear", `${normalized.programme}, ${normalized.yearOfStudy}`);
+    setText("#profileEmail", normalized.email);
+    setText("#currentSemester", normalized.currentSemester);
+    setText("#totalCredits", normalized.totalCredits);
+    setText("#currentGpa", String(normalized.currentGpa));
+    setText("#activeCourses", String(courses.length));
+    setText("#activeTasks", String(tasks.filter((task) => task.status !== "Completed").length));
   }
 
-  function showSimpleToast(message) {
-    const toast = document.getElementById("sifuToast");
-    const toastMessage = document.getElementById("toastMessage");
+  /* ============================= */
+  /* COURSES PAGE */
+  /* ============================= */
 
-    if (!toast || !toastMessage) return;
-
-    toastMessage.textContent = message;
-    toast.classList.add("show");
-
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 1800);
-  }
-
-  function setupTrackingInfoLinks() {
-    document.querySelectorAll("[data-info]").forEach((link) => {
-      link.addEventListener("click", function (event) {
-        event.preventDefault();
-        showSimpleToast(link.dataset.info || "This feature will be connected after merge.");
-      });
-    });
-  }
-
-  /* ---------- COURSES PAGE ---------- */
-
-  function setupCoursesPage() {
+  async function setupCoursesPage() {
     const list = document.getElementById("courseCards");
     const form = document.getElementById("courseForm");
     const modal = document.getElementById("courseModal");
 
     if (!list || !form || !modal) return;
 
-    let courses = readData(COURSE_KEY, null);
+    let courses = [];
 
-    if (!Array.isArray(courses) || courses.length === 0) {
-      courses = defaultCoursesUI;
-      writeData(COURSE_KEY, courses);
+    await loadCourses();
+
+    const openButton = document.getElementById("openCourseModal");
+    const closeButton = document.getElementById("closeCourseModal");
+
+    if (openButton) {
+      openButton.addEventListener("click", function () {
+        form.reset();
+        document.getElementById("courseId").value = "";
+        document.getElementById("courseModalTitle").textContent = "Add Course";
+        openModal(modal);
+      });
     }
 
-    renderCourses(courses);
+    if (closeButton) {
+      closeButton.addEventListener("click", function () {
+        closeModal(modal);
+      });
+    }
 
-    document.getElementById("openCourseModal").addEventListener("click", function () {
-      form.reset();
-      document.getElementById("courseId").value = "";
-      document.getElementById("courseModalTitle").textContent = "Add Course";
-      openModal(modal);
-    });
-
-    document.getElementById("closeCourseModal").addEventListener("click", function () {
-      closeModal(modal);
-    });
-
-    form.addEventListener("submit", function (event) {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       const id = document.getElementById("courseId").value;
 
       const courseData = {
-        id: id || makeId(),
-        code: document.getElementById("courseCode").value.trim(),
+        id,
+        code: document.getElementById("courseCode").value.trim().toUpperCase(),
         name: document.getElementById("courseName").value.trim(),
         lecturer: document.getElementById("courseLecturer").value.trim(),
         credits: Number(document.getElementById("courseCredits").value),
@@ -831,34 +573,50 @@
       };
 
       if (!courseData.code || !courseData.name || !courseData.lecturer || !courseData.credits) {
-        showSimpleToast("Please fill in all course fields.");
+        showToast("Please fill in all course fields.", "danger");
         return;
       }
 
-      if (id) {
-        courses = courses.map((course) => course.id === id ? courseData : course);
-        showSimpleToast("Course updated.");
-      } else {
-        courses.unshift(courseData);
-        showSimpleToast("Course added.");
-      }
+      try {
+        if (id) {
+          await api(`/api/courses/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(courseData)
+          });
 
-      writeData(COURSE_KEY, courses);
-      renderCourses(courses);
-      closeModal(modal);
+          showToast("Course updated.");
+        } else {
+          await api("/api/courses", {
+            method: "POST",
+            body: JSON.stringify({
+              ...courseData,
+              userId: getCurrentUserId()
+            })
+          });
+
+          showToast("Course added.");
+        }
+
+        closeModal(modal);
+        form.reset();
+        document.getElementById("courseId").value = "";
+        await loadCourses();
+      } catch (error) {
+        showToast(error.message || "Course request failed.", "danger");
+      }
     });
 
-    list.addEventListener("click", function (event) {
+    list.addEventListener("click", async function (event) {
       const editBtn = event.target.closest("[data-course-edit]");
       const deleteBtn = event.target.closest("[data-course-delete]");
 
       if (editBtn) {
-        const course = courses.find((item) => item.id === editBtn.dataset.courseEdit);
+        const course = courses.find((item) => String(item.id) === String(editBtn.dataset.courseEdit));
         if (!course) return;
 
         document.getElementById("courseId").value = course.id;
-        document.getElementById("courseCode").value = course.code;
-        document.getElementById("courseName").value = course.name;
+        document.getElementById("courseCode").value = course.code || "";
+        document.getElementById("courseName").value = course.name || "";
         document.getElementById("courseLecturer").value = course.lecturer || "";
         document.getElementById("courseCredits").value = course.credits || 3;
         document.getElementById("courseProgress").value = course.progress || 0;
@@ -869,12 +627,33 @@
       }
 
       if (deleteBtn) {
-        courses = courses.filter((item) => item.id !== deleteBtn.dataset.courseDelete);
-        writeData(COURSE_KEY, courses);
-        renderCourses(courses);
-        showSimpleToast("Course deleted.");
+        const id = deleteBtn.dataset.courseDelete;
+
+        try {
+          await api(`/api/courses/${id}`, {
+            method: "DELETE"
+          });
+
+          showToast("Course deleted.");
+          await loadCourses();
+        } catch (error) {
+          showToast(error.message || "Could not delete course.", "danger");
+        }
       }
     });
+
+    async function loadCourses() {
+      try {
+        const data = await api(`/api/courses/${getCurrentUserId()}`);
+        courses = data.courses || [];
+        write(STORE.courses, courses);
+      } catch (error) {
+        courses = read(STORE.courses, fallbackCourses);
+        showToast("Courses loaded from saved data. Backend not reachable.", "warning");
+      }
+
+      renderCourses(courses);
+    }
   }
 
   function renderCourses(courses) {
@@ -899,12 +678,12 @@
       const color = course.color || "red";
 
       return `
-        <article class="course-card-ui course-${color}">
+        <article class="course-card-ui course-${escapeHTML(color)}">
           <div class="course-card-top">
             <div>
               <div class="course-tags">
                 <span class="course-code-badge">${escapeHTML(course.code)}</span>
-                <span class="course-credit">${course.credits} credits</span>
+                <span class="course-credit">${Number(course.credits || 0)} credits</span>
               </div>
 
               <h2>${escapeHTML(course.name)}</h2>
@@ -935,36 +714,39 @@
     }).join("");
   }
 
-  /* ---------- TASKS PAGE ---------- */
+  /* ============================= */
+  /* TASKS PAGE */
+  /* ============================= */
 
-  function setupTasksPage() {
+  async function setupTasksPage() {
     const list = document.getElementById("taskCards");
     const form = document.getElementById("taskForm");
     const modal = document.getElementById("taskModal");
 
     if (!list || !form || !modal) return;
 
-    let tasks = readData(TASK_KEY, null);
-
-    if (!Array.isArray(tasks) || tasks.length === 0) {
-      tasks = defaultTasksUI;
-      writeData(TASK_KEY, tasks);
-    }
-
+    let tasks = [];
     let currentFilter = "All";
 
-    renderTasks(tasks, currentFilter);
+    await loadTasks();
 
-    document.getElementById("openTaskModal").addEventListener("click", function () {
-      form.reset();
-      document.getElementById("taskId").value = "";
-      document.getElementById("taskModalTitle").textContent = "Add Task";
-      openModal(modal);
-    });
+    const openButton = document.getElementById("openTaskModal");
+    const closeButton = document.getElementById("closeTaskModal");
 
-    document.getElementById("closeTaskModal").addEventListener("click", function () {
-      closeModal(modal);
-    });
+    if (openButton) {
+      openButton.addEventListener("click", function () {
+        form.reset();
+        document.getElementById("taskId").value = "";
+        document.getElementById("taskModalTitle").textContent = "Add Task";
+        openModal(modal);
+      });
+    }
+
+    if (closeButton) {
+      closeButton.addEventListener("click", function () {
+        closeModal(modal);
+      });
+    }
 
     document.querySelectorAll(".task-filter").forEach((button) => {
       button.addEventListener("click", function () {
@@ -976,79 +758,123 @@
       });
     });
 
-    form.addEventListener("submit", function (event) {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       const id = document.getElementById("taskId").value;
 
       const taskData = {
-        id: id || makeId(),
+        id,
         title: document.getElementById("taskTitle").value.trim(),
-        course: document.getElementById("taskCourse").value.trim(),
+        course: document.getElementById("taskCourse").value.trim().toUpperCase(),
         status: document.getElementById("taskStatus").value,
         priority: document.getElementById("taskPriority").value,
         due: document.getElementById("taskDue").value
       };
 
       if (!taskData.title || !taskData.course || !taskData.due) {
-        showSimpleToast("Please fill in all task fields.");
+        showToast("Please fill in all task fields.", "danger");
         return;
       }
 
-      if (id) {
-        tasks = tasks.map((task) => task.id === id ? taskData : task);
-        showSimpleToast("Task updated.");
-      } else {
-        tasks.unshift(taskData);
-        showSimpleToast("Task added.");
-      }
+      try {
+        if (id) {
+          await api(`/api/tasks/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(taskData)
+          });
 
-      writeData(TASK_KEY, tasks);
-      renderTasks(tasks, currentFilter);
-      closeModal(modal);
+          showToast("Task updated.");
+        } else {
+          await api("/api/tasks", {
+            method: "POST",
+            body: JSON.stringify({
+              ...taskData,
+              userId: getCurrentUserId()
+            })
+          });
+
+          showToast("Task added.");
+        }
+
+        closeModal(modal);
+        form.reset();
+        document.getElementById("taskId").value = "";
+        await loadTasks();
+      } catch (error) {
+        showToast(error.message || "Task request failed.", "danger");
+      }
     });
 
-    list.addEventListener("click", function (event) {
+    list.addEventListener("click", async function (event) {
       const editBtn = event.target.closest("[data-task-edit]");
       const deleteBtn = event.target.closest("[data-task-delete]");
       const checkBtn = event.target.closest("[data-task-check]");
 
       if (checkBtn) {
-        tasks = tasks.map((task) => {
-          if (task.id !== checkBtn.dataset.taskCheck) return task;
-          return {
-            ...task,
-            status: task.status === "Completed" ? "Pending" : "Completed"
-          };
-        });
+        const task = tasks.find((item) => String(item.id) === String(checkBtn.dataset.taskCheck));
+        if (!task) return;
 
-        writeData(TASK_KEY, tasks);
-        renderTasks(tasks, currentFilter);
-        showSimpleToast("Task status updated.");
+        const nextStatus = task.status === "Completed" ? "Pending" : "Completed";
+
+        try {
+          await api(`/api/tasks/${task.id}/status`, {
+            method: "PATCH",
+            body: JSON.stringify({
+              status: nextStatus
+            })
+          });
+
+          showToast("Task status updated.");
+          await loadTasks();
+        } catch (error) {
+          showToast(error.message || "Could not update task status.", "danger");
+        }
       }
 
       if (editBtn) {
-        const task = tasks.find((item) => item.id === editBtn.dataset.taskEdit);
+        const task = tasks.find((item) => String(item.id) === String(editBtn.dataset.taskEdit));
         if (!task) return;
 
         document.getElementById("taskId").value = task.id;
-        document.getElementById("taskTitle").value = task.title;
-        document.getElementById("taskCourse").value = task.course;
-        document.getElementById("taskStatus").value = task.status;
-        document.getElementById("taskPriority").value = task.priority;
-        document.getElementById("taskDue").value = task.due;
+        document.getElementById("taskTitle").value = task.title || "";
+        document.getElementById("taskCourse").value = task.course || "";
+        document.getElementById("taskStatus").value = task.status || "Pending";
+        document.getElementById("taskPriority").value = task.priority || "Medium";
+        document.getElementById("taskDue").value = task.due || "";
         document.getElementById("taskModalTitle").textContent = "Edit Task";
 
         openModal(modal);
       }
 
       if (deleteBtn) {
-        tasks = tasks.filter((item) => item.id !== deleteBtn.dataset.taskDelete);
-        writeData(TASK_KEY, tasks);
-        renderTasks(tasks, currentFilter);
-        showSimpleToast("Task deleted.");
+        const id = deleteBtn.dataset.taskDelete;
+
+        try {
+          await api(`/api/tasks/${id}`, {
+            method: "DELETE"
+          });
+
+          showToast("Task deleted.");
+          await loadTasks();
+        } catch (error) {
+          showToast(error.message || "Could not delete task.", "danger");
+        }
       }
     });
+
+    async function loadTasks() {
+      try {
+        const data = await api(`/api/tasks/${getCurrentUserId()}`);
+        tasks = data.tasks || [];
+        write(STORE.tasks, tasks);
+      } catch (error) {
+        tasks = read(STORE.tasks, fallbackTasks);
+        showToast("Tasks loaded from saved data. Backend not reachable.", "warning");
+      }
+
+      renderTasks(tasks, currentFilter);
+    }
   }
 
   function renderTasks(tasks, filter) {
@@ -1070,12 +896,12 @@
       : tasks.filter((task) => task.status === filter);
 
     if (visibleTasks.length === 0) {
-      list.innerHTML = `<div class="empty-tracking">No ${filter.toLowerCase()} tasks found.</div>`;
+      list.innerHTML = `<div class="empty-tracking">No ${String(filter).toLowerCase()} tasks found.</div>`;
       return;
     }
 
     list.innerHTML = visibleTasks.map((task) => {
-      const statusClass = task.status.toLowerCase();
+      const statusClass = String(task.status || "Pending").toLowerCase();
       const isDone = task.status === "Completed";
       const priorityClass = task.priority === "Low" ? "low" : "priority";
 
@@ -1087,10 +913,10 @@
 
           <div class="task-main">
             <div class="task-badges">
-              <span class="task-badge ${statusClass}">${task.status}</span>
+              <span class="task-badge ${escapeHTML(statusClass)}">${escapeHTML(task.status || "Pending")}</span>
               <span class="task-badge ${priorityClass}">
                 <i class="bi bi-flag"></i>
-                ${task.priority}
+                ${escapeHTML(task.priority || "Medium")}
               </span>
             </div>
 
@@ -1119,165 +945,49 @@
     }).join("");
   }
 
-  function openModal(modal) {
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-  }
+  /* ============================= */
+  /* CALENDAR DASHBOARD */
+  /* ============================= */
 
-  function closeModal(modal) {
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
-  }
-
-  function formatDate(dateString) {
-    if (!dateString) return "No date";
-
-    const date = new Date(dateString + "T00:00:00");
-
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
-  }
-
-  function escapeHTML(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-})();
-/* ============================= */
-/* CALENDAR + SCHEDULE FUNCTIONALITY */
-/* ============================= */
-
-(function () {
-  const COURSE_KEY = "sifu_courses";
-  const TASK_KEY = "sifu_tasks";
-
-  document.addEventListener("DOMContentLoaded", function () {
-    setupStudySchedulePage();
-    setupCalendarDashboardPage();
-    setupStudyInfoLinks();
-  });
-
-  function readData(key, fallback) {
-    try {
-      const value = localStorage.getItem(key);
-      return value ? JSON.parse(value) : fallback;
-    } catch {
-      return fallback;
-    }
-  }
-
-  function setupStudyInfoLinks() {
-    document.querySelectorAll("[data-info]").forEach((link) => {
-      link.addEventListener("click", function (event) {
-        event.preventDefault();
-        showStudyToast(link.dataset.info || "This page will connect after merge.");
-      });
-    });
-  }
-
-  function showStudyToast(message) {
-    const toast = document.getElementById("sifuToast");
-    const toastMessage = document.getElementById("toastMessage");
-
-    if (!toast || !toastMessage) return;
-
-    toastMessage.textContent = message;
-    toast.classList.add("show");
-
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 1800);
-  }
-
-  function setupStudySchedulePage() {
-    const list = document.getElementById("generatedScheduleList");
-    if (!list) return;
-
-    const tasks = readData(TASK_KEY, getFallbackTasks());
-
-    const activeTasks = tasks
-      .filter((task) => task.status !== "Completed")
-      .slice(0, 4);
-
-    if (activeTasks.length === 0) {
-      list.innerHTML = `<div class="empty-study">No active tasks found. Add tasks first to generate a study schedule.</div>`;
-      return;
-    }
-
-    const times = [
-      "2:00 PM - 4:30 PM",
-      "7:00 PM - 8:30 PM",
-      "3:00 PM - 5:00 PM",
-      "8:00 PM - 9:00 PM"
-    ];
-
-    const notes = [
-      "Recommended because the deadline is near",
-      "Suggested based on weak subject progress",
-      "Optimal time based on your productivity patterns",
-      "Light session scheduled for evening"
-    ];
-
-    const days = ["Monday, May 19", "Tuesday, May 20"];
-
-    let html = "";
-
-    activeTasks.forEach((task, index) => {
-      if (index === 0) html += `<h2 class="schedule-day-title">${days[0]}</h2>`;
-      if (index === 2) html += `<h2 class="schedule-day-title">${days[1]}</h2>`;
-
-      const priority = normalizePriority(task.priority);
-      const course = task.course || task.courseCode || "SCSE2243";
-
-      html += `
-        <article class="generated-card">
-          <div class="generated-top">
-            <span class="generated-priority ${priority.toLowerCase()}">${priority}</span>
-            <span class="generated-course">${escapeHTML(course)}</span>
-          </div>
-
-          <h2>${escapeHTML(task.title)}</h2>
-
-          <div class="generated-time">
-            <i class="bi bi-clock"></i>
-            ${times[index] || "8:00 PM - 9:00 PM"}
-          </div>
-
-          <div class="generated-note">
-            ${notes[index] || "AI recommended session based on your tasks"}
-          </div>
-        </article>
-      `;
-    });
-
-    list.innerHTML = html;
-  }
-
-  function setupCalendarDashboardPage() {
+  async function setupCalendarDashboardPage() {
     const deadlineList = document.getElementById("upcomingDeadlineList");
     if (!deadlineList) return;
 
-    const tasks = readData(TASK_KEY, getFallbackTasks());
-    const courses = readData(COURSE_KEY, getFallbackCourses());
+    try {
+      const data = await api(`/api/dashboard/${getCurrentUserId()}`);
+      const dashboard = data.dashboard || {};
 
-    const high = tasks.filter((task) => task.priority === "High").length;
-    const medium = tasks.filter((task) => task.priority === "Medium").length;
-    const low = tasks.filter((task) => task.priority === "Low").length;
+      setText("highPriorityCount", `${dashboard.highPriority || 0} tasks`);
+      setText("mediumPriorityCount", `${dashboard.mediumPriority || 0} tasks`);
+      setText("lowPriorityCount", `${dashboard.lowPriority || 0} tasks`);
+      setText("calendarCourseProgress", `${dashboard.courseProgress || 0}%`);
+      setText("calendarCourseCount", `${dashboard.activeCourses || 0} courses active`);
 
-    setText("highPriorityCount", `${high} tasks`);
-    setText("mediumPriorityCount", `${medium} tasks`);
-    setText("lowPriorityCount", `${low} tasks`);
+      renderDashboardDeadlines(dashboard.upcomingDeadlines || []);
+    } catch (error) {
+      const tasks = read(STORE.tasks, fallbackTasks);
+      const courses = read(STORE.courses, fallbackCourses);
 
-    const progressAverage = calculateCourseProgress(courses);
-    setText("calendarCourseProgress", `${progressAverage}%`);
-    setText("calendarCourseCount", `${courses.length} courses active`);
+      const high = tasks.filter((task) => task.priority === "High").length;
+      const medium = tasks.filter((task) => task.priority === "Medium").length;
+      const low = tasks.filter((task) => task.priority === "Low").length;
+
+      setText("highPriorityCount", `${high} tasks`);
+      setText("mediumPriorityCount", `${medium} tasks`);
+      setText("lowPriorityCount", `${low} tasks`);
+
+      const progressAverage = calculateCourseProgress(courses);
+      setText("calendarCourseProgress", `${progressAverage}%`);
+      setText("calendarCourseCount", `${courses.length} courses active`);
+
+      renderDashboardDeadlines(tasks);
+      showToast("Dashboard loaded from saved data. Backend not reachable.", "warning");
+    }
+  }
+
+  function renderDashboardDeadlines(tasks) {
+    const deadlineList = document.getElementById("upcomingDeadlineList");
+    if (!deadlineList) return;
 
     const activeTasks = tasks
       .filter((task) => task.status !== "Completed")
@@ -1292,6 +1002,7 @@
     deadlineList.innerHTML = activeTasks.map((task, index) => {
       const date = parseDate(task.due);
       const course = task.course || task.courseCode || "SCSE2243";
+      const dueText = index === 0 ? "Due soon" : `Due in ${index * 2 + 2} days`;
 
       return `
         <div class="deadline-summary-item">
@@ -1302,12 +1013,97 @@
 
           <div class="deadline-info">
             <h3>${escapeHTML(task.title)}</h3>
-            <p>${escapeHTML(course)} - Due in ${index * 2 + 2} days</p>
+            <p>${escapeHTML(course)} - ${dueText}</p>
           </div>
         </div>
       `;
     }).join("");
   }
+
+  /* ============================= */
+  /* GENERATED STUDY SCHEDULE */
+  /* ============================= */
+
+  async function setupStudySchedulePage() {
+    const list = document.getElementById("generatedScheduleList");
+    if (!list) return;
+
+    try {
+      const data = await api(`/api/schedule/${getCurrentUserId()}`);
+      renderStudySchedule(data.schedule || []);
+    } catch (error) {
+      const tasks = read(STORE.tasks, fallbackTasks)
+        .filter((task) => task.status !== "Completed")
+        .slice(0, 4);
+
+      const fallbackSchedule = tasks.map((task, index) => ({
+        title: task.title,
+        course: task.course || task.courseCode || "SCSE2243",
+        priority: task.priority || "Medium",
+        day: index < 2 ? "Monday, May 19" : "Tuesday, May 20",
+        time: ["2:00 PM - 4:30 PM", "7:00 PM - 8:30 PM", "3:00 PM - 5:00 PM", "8:00 PM - 9:00 PM"][index],
+        note: [
+          "Recommended because the deadline is near",
+          "Suggested based on weak subject progress",
+          "Optimal time based on your productivity patterns",
+          "Light session scheduled for evening"
+        ][index]
+      }));
+
+      renderStudySchedule(fallbackSchedule);
+      showToast("Schedule loaded from saved data. Backend not reachable.", "warning");
+    }
+  }
+
+  function renderStudySchedule(schedule) {
+    const list = document.getElementById("generatedScheduleList");
+    if (!list) return;
+
+    if (!schedule.length) {
+      list.innerHTML = `<div class="empty-study">No active tasks found. Add tasks first to generate a study schedule.</div>`;
+      return;
+    }
+
+    let html = "";
+
+    schedule.forEach((item, index) => {
+      if (index === 0) {
+        html += `<h2 class="schedule-day-title">${escapeHTML(item.day || "Monday, May 19")}</h2>`;
+      }
+
+      if (index > 0 && item.day && item.day !== schedule[index - 1].day) {
+        html += `<h2 class="schedule-day-title">${escapeHTML(item.day)}</h2>`;
+      }
+
+      const priority = item.priority || "Medium";
+
+      html += `
+        <article class="generated-card">
+          <div class="generated-top">
+            <span class="generated-priority ${escapeHTML(priority.toLowerCase())}">${escapeHTML(priority)}</span>
+            <span class="generated-course">${escapeHTML(item.course || "SCSE2243")}</span>
+          </div>
+
+          <h2>${escapeHTML(item.title)}</h2>
+
+          <div class="generated-time">
+            <i class="bi bi-clock"></i>
+            ${escapeHTML(item.time || "8:00 PM - 9:00 PM")}
+          </div>
+
+          <div class="generated-note">
+            ${escapeHTML(item.note || "AI recommended session based on your tasks")}
+          </div>
+        </article>
+      `;
+    });
+
+    list.innerHTML = html;
+  }
+
+  /* ============================= */
+  /* DATE / CALC HELPERS */
+  /* ============================= */
 
   function calculateCourseProgress(courses) {
     if (!Array.isArray(courses) || courses.length === 0) return 68;
@@ -1319,10 +1115,16 @@
     return Math.round(total / courses.length);
   }
 
-  function normalizePriority(priority) {
-    if (priority === "High") return "High";
-    if (priority === "Medium") return "Medium";
-    return "Low";
+  function formatDate(dateString) {
+    if (!dateString) return "No date";
+
+    const date = new Date(dateString + "T00:00:00");
+
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
   }
 
   function parseDate(dateString) {
@@ -1338,61 +1140,5 @@
       month: date.toLocaleDateString("en-US", { month: "short" }),
       day: date.toLocaleDateString("en-US", { day: "2-digit" })
     };
-  }
-
-  function setText(id, value) {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value;
-  }
-
-  function escapeHTML(text) {
-    return String(text || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function getFallbackCourses() {
-    return [
-      { code: "SCSE2243", progress: 72 },
-      { code: "SECJ2013", progress: 58 },
-      { code: "SCSJ2203", progress: 45 },
-      { code: "SCST1223", progress: 85 }
-    ];
-  }
-
-  function getFallbackTasks() {
-    return [
-      {
-        title: "Software Design Report",
-        course: "SCSE2243",
-        status: "Pending",
-        priority: "High",
-        due: "2026-05-20"
-      },
-      {
-        title: "Database ERD Submission",
-        course: "SECJ2013",
-        status: "Pending",
-        priority: "Medium",
-        due: "2026-05-22"
-      },
-      {
-        title: "Quiz 2",
-        course: "SCSJ2203",
-        status: "Pending",
-        priority: "High",
-        due: "2026-05-25"
-      },
-      {
-        title: "Assignment 3 Planning",
-        course: "SCST1223",
-        status: "Pending",
-        priority: "Low",
-        due: "2026-05-25"
-      }
-    ];
   }
 })();
