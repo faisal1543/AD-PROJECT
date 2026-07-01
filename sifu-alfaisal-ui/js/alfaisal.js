@@ -23,7 +23,7 @@ function setupStudyPlanner() {
 
   if (!plannerForm) return;
 
-  plannerForm.addEventListener("submit", function (event) {
+  plannerForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const subject = subjectInput.value;
@@ -37,27 +37,71 @@ function setupStudyPlanner() {
       return;
     }
 
-    plannerSummary.innerHTML = `
-      <div class="card-row">
-        <div class="card-icon">
-          <i class="bi bi-lightning-charge"></i>
-        </div>
+    const submitBtn = plannerForm.querySelector("button[type=submit]");
+    if (submitBtn) submitBtn.disabled = true;
 
-        <div>
-          <h3 class="card-title">AI Plan Generated</h3>
-          <p class="card-text">
-            Sifu created a ${hours}-hour study plan for <strong>${subject}</strong>
-            with <strong>${priority}</strong> priority before your deadline on
-            <strong>${formatDate(deadline)}</strong>.
-          </p>
-        </div>
-      </div>
-    `;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, hours, priority, deadline, studentId: 1 })
+      });
 
-    generatedTimeline.innerHTML = generateTimeline(subject, hours, priority);
+      const result = await response.json();
 
-    showToast("Sifu AI generated your study plan successfully.", "success");
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to generate study plan.");
+      }
+
+      renderPlannerSummary(result.data.subject, result.data.hours, result.data.priority, result.data.deadline, result.data.aiMessage);
+      generatedTimeline.innerHTML = renderTimelineFromSchedule(result.data.schedule);
+
+      showToast("Sifu AI generated your study plan successfully.", "success");
+    } catch (error) {
+      console.error(error);
+      // Fall back to local generation so the page still works if the API/server is unreachable
+      renderPlannerSummary(subject, hours, priority, deadline);
+      generatedTimeline.innerHTML = generateTimeline(subject, hours, priority);
+      showToast("Couldn't reach Sifu AI server — showing a locally generated plan instead.", "warning");
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   });
+}
+
+function renderPlannerSummary(subject, hours, priority, deadline, aiMessage) {
+  const plannerSummary = document.getElementById("plannerSummary");
+  const message =
+    aiMessage ||
+    `Sifu created a ${hours}-hour study plan for ${subject} with ${priority} priority before your deadline on ${formatDate(deadline)}.`;
+
+  plannerSummary.innerHTML = `
+    <div class="card-row">
+      <div class="card-icon">
+        <i class="bi bi-lightning-charge"></i>
+      </div>
+
+      <div>
+        <h3 class="card-title">AI Plan Generated</h3>
+        <p class="card-text">${message}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderTimelineFromSchedule(schedule) {
+  return schedule
+    .map(
+      (item) => `
+    <div class="timeline-item">
+      <div class="timeline-time">${item.time}</div>
+      <div class="timeline-content">
+        <h4>${item.activity}</h4>
+      </div>
+    </div>
+  `
+    )
+    .join("");
 }
 
 function generateTimeline(subject, hours, priority) {

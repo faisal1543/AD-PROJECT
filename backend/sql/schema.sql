@@ -111,31 +111,65 @@ CREATE TABLE IF NOT EXISTS generated_study_plan_items (
 INSERT INTO students (id, name, gpa) VALUES (1, 'Demo Student', 3.45)
   ON DUPLICATE KEY UPDATE gpa = VALUES(gpa);
 
-INSERT INTO subject_progress (student_id, subject, progress) VALUES
-  (1, 'Application Development', 82),
-  (1, 'Data Structures', 46),
-  (1, 'Computer Security', 67),
-  (1, 'Requirements Engineering', 74);
+INSERT INTO subject_progress (student_id, subject, progress)
+SELECT * FROM (SELECT 1, 'Application Development', 82) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM subject_progress WHERE student_id = 1 AND subject = 'Application Development');
 
-INSERT INTO study_time (student_id, subject, hours) VALUES
-  (1, 'App Dev', 7),
-  (1, 'DSA', 4),
-  (1, 'Security', 3),
-  (1, 'Req Eng', 4);
+INSERT INTO subject_progress (student_id, subject, progress)
+SELECT * FROM (SELECT 1, 'Data Structures', 46) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM subject_progress WHERE student_id = 1 AND subject = 'Data Structures');
+
+INSERT INTO subject_progress (student_id, subject, progress)
+SELECT * FROM (SELECT 1, 'Computer Security', 67) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM subject_progress WHERE student_id = 1 AND subject = 'Computer Security');
+
+INSERT INTO subject_progress (student_id, subject, progress)
+SELECT * FROM (SELECT 1, 'Requirements Engineering', 74) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM subject_progress WHERE student_id = 1 AND subject = 'Requirements Engineering');
+
+INSERT INTO study_time (student_id, subject, hours)
+SELECT * FROM (SELECT 1, 'App Dev', 7) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM study_time WHERE student_id = 1 AND subject = 'App Dev');
+
+INSERT INTO study_time (student_id, subject, hours)
+SELECT * FROM (SELECT 1, 'DSA', 4) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM study_time WHERE student_id = 1 AND subject = 'DSA');
+
+INSERT INTO study_time (student_id, subject, hours)
+SELECT * FROM (SELECT 1, 'Security', 3) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM study_time WHERE student_id = 1 AND subject = 'Security');
+
+INSERT INTO study_time (student_id, subject, hours)
+SELECT * FROM (SELECT 1, 'Req Eng', 4) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM study_time WHERE student_id = 1 AND subject = 'Req Eng');
 
 INSERT INTO task_completion (student_id, completed, pending, overdue) VALUES
   (1, 14, 4, 2)
   ON DUPLICATE KEY UPDATE completed = VALUES(completed), pending = VALUES(pending), overdue = VALUES(overdue);
 
-INSERT INTO ai_resources (student_id, title, type, subject, duration, priority) VALUES
-  (1, 'Application Development UI Notes', 'notes', 'Application Development', '20 min', 'Urgent'),
-  (1, 'Linked List Weak Area Revision', 'weak', 'Data Structures', '35 min', 'Weak Area'),
-  (1, 'DSA Practice Questions', 'practice', 'Data Structures', '45 min', 'Practice'),
-  (1, 'Computer Security Revision Video', 'video', 'Computer Security', '25 min', 'Video');
+INSERT INTO ai_resources (student_id, title, type, subject, duration, priority)
+SELECT * FROM (SELECT 1, 'Application Development UI Notes', 'notes', 'Application Development', '20 min', 'Urgent') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_resources WHERE student_id = 1 AND title = 'Application Development UI Notes');
 
-INSERT INTO ai_suggestions (student_id, title, reason, confidence) VALUES
-  (1, 'Focus on Data Structures today', 'Lowest subject progress detected', 89),
-  (1, 'Complete overdue tasks', 'Overdue tasks increase academic risk', 82);
+INSERT INTO ai_resources (student_id, title, type, subject, duration, priority)
+SELECT * FROM (SELECT 1, 'Linked List Weak Area Revision', 'weak', 'Data Structures', '35 min', 'Weak Area') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_resources WHERE student_id = 1 AND title = 'Linked List Weak Area Revision');
+
+INSERT INTO ai_resources (student_id, title, type, subject, duration, priority)
+SELECT * FROM (SELECT 1, 'DSA Practice Questions', 'practice', 'Data Structures', '45 min', 'Practice') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_resources WHERE student_id = 1 AND title = 'DSA Practice Questions');
+
+INSERT INTO ai_resources (student_id, title, type, subject, duration, priority)
+SELECT * FROM (SELECT 1, 'Computer Security Revision Video', 'video', 'Computer Security', '25 min', 'Video') AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_resources WHERE student_id = 1 AND title = 'Computer Security Revision Video');
+
+INSERT INTO ai_suggestions (student_id, title, reason, confidence)
+SELECT * FROM (SELECT 1, 'Focus on Data Structures today', 'Lowest subject progress detected', 89) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_suggestions WHERE student_id = 1 AND title = 'Focus on Data Structures today');
+
+INSERT INTO ai_suggestions (student_id, title, reason, confidence)
+SELECT * FROM (SELECT 1, 'Complete overdue tasks', 'Overdue tasks increase academic risk', 82) AS tmp
+WHERE NOT EXISTS (SELECT 1 FROM ai_suggestions WHERE student_id = 1 AND title = 'Complete overdue tasks');
   
   -- ============================================================
 -- Maged Communication & Support Module
