@@ -51,6 +51,41 @@ exports.create = async (userData) => {
   return result.insertId;
 };
 
+exports.update = async (userId, updates) => {
+  const allowedFields = {
+    fullName: "full_name",
+    faculty: "faculty",
+    programme: "programme",
+    yearOfStudy: "year_of_study",
+    currentSemester: "current_semester",
+    totalCredits: "total_credits",
+    currentGpa: "current_gpa"
+  };
+
+  const columns = [];
+  const values = [];
+
+  for (const [key, column] of Object.entries(allowedFields)) {
+    if (updates[key] !== undefined) {
+      columns.push(`${column} = ?`);
+      values.push(updates[key]);
+    }
+  }
+
+  if (columns.length === 0) {
+    return 0;
+  }
+
+  values.push(userId);
+
+  const [result] = await db.query(
+    `UPDATE users SET ${columns.join(", ")} WHERE user_id = ?`,
+    values
+  );
+
+  return result.affectedRows;
+};
+
 exports.format = (user) => {
   if (!user) return null;
 

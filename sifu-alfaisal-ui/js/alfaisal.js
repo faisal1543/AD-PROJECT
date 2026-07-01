@@ -154,73 +154,220 @@ function setupRiskPrediction() {
   const riskBar = document.getElementById("riskBar");
   const riskTitle = document.querySelector(".risk-hero h2");
   const riskDescription = document.querySelector(".risk-hero p");
+  const riskFactorsList = document.getElementById("riskFactorsList");
+  const subjectRiskBreakdown = document.getElementById("subjectRiskBreakdown");
 
   if (!riskScore || !riskBar) return;
 
-  riskBar.style.width = "0%";
+  function renderFactors(factors) {
+    if (!riskFactorsList || !Array.isArray(factors)) return;
 
-  setTimeout(() => {
-    riskBar.style.width = "62%";
-  }, 250);
+    riskFactorsList.innerHTML = factors
+      .map((f, index) => {
+        const icon = f.factor.includes("Overdue")
+          ? "bi-clock-history"
+          : f.factor.includes("Study Hours")
+          ? "bi-hourglass-split"
+          : "bi-graph-down-arrow";
+
+        const divider = index < factors.length - 1 ? '<div class="divider"></div>' : "";
+
+        return `
+          <div class="card-row${index < factors.length - 1 ? " mb-3" : ""}">
+            <div class="card-icon">
+              <i class="bi ${icon}"></i>
+            </div>
+            <div>
+              <h3 class="card-title">${f.factor}</h3>
+            </div>
+            <span class="badge-soft badge-${f.severity === "High" ? "danger" : f.severity === "Medium" ? "warning" : "success"}">${f.severity}</span>
+          </div>
+          ${divider}
+        `;
+      })
+      .join("");
+  }
+
+  function renderSubjectBreakdown(subjects) {
+    if (!subjectRiskBreakdown || !Array.isArray(subjects)) return;
+
+    subjectRiskBreakdown.innerHTML = subjects
+      .map((s) => {
+        const textClass = s.progress < 50 ? "text-danger" : s.progress < 70 ? "text-warning" : "text-success";
+        const barColor = s.progress < 50 ? "var(--danger)" : s.progress < 70 ? "var(--warning)" : "var(--success)";
+
+        return `
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>${s.subject}</span>
+              <strong class="${textClass}">${s.progress}%</strong>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" style="width: ${s.progress}%; background: ${barColor};"></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function applyRisk(data) {
+    riskScore.textContent = `${data.riskScore}%`;
+    riskBar.style.width = `${data.riskScore}%`;
+    riskBar.style.background =
+      data.riskScore >= 70 ? "var(--danger)" : data.riskScore >= 40 ? "var(--warning)" : "var(--success)";
+
+    if (riskTitle) riskTitle.textContent = data.riskLevel;
+    if (riskDescription) riskDescription.textContent = data.recommendation;
+
+    renderFactors(data.factors);
+  }
+
+  async function loadRisk() {
+    try {
+      const [riskResponse, subjectResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/ai/risk/1`),
+        fetch(`${API_BASE_URL}/api/analytics/subject-progress/1`)
+      ]);
+
+      const riskResult = await riskResponse.json();
+      const subjectResult = await subjectResponse.json();
+
+      if (!riskResponse.ok || !riskResult.success) {
+        throw new Error(riskResult.message || "Failed to load risk prediction.");
+      }
+
+      applyRisk(riskResult.data);
+
+      if (subjectResponse.ok && subjectResult.success) {
+        renderSubjectBreakdown(subjectResult.data);
+      }
+    } catch (error) {
+      console.error(error);
+      riskBar.style.width = "0%";
+      setTimeout(() => {
+        riskBar.style.width = "62%";
+      }, 250);
+      showToast("Couldn't reach Sifu AI server — showing demo risk data instead.", "warning");
+    }
+  }
+
+  loadRisk();
 
   if (!recheckBtn) return;
 
   recheckBtn.addEventListener("click", function () {
-    riskScore.textContent = "48%";
-    riskBar.style.width = "48%";
-    riskBar.style.background = "var(--success)";
-
-    if (riskTitle) {
-      riskTitle.textContent = "Improving Risk";
-    }
-
-    if (riskDescription) {
-      riskDescription.textContent =
-        "Your risk level improved after recalculating recent study progress. Continue focusing on Data Structures and complete overdue work.";
-    }
-
-    showToast("Risk score recalculated successfully.", "success");
+    showToast("Recalculating risk score...", "success");
+    loadRisk();
   });
 }
 
 /* ---------- Resource Filters ---------- */
+const resourceIcons = {
+  notes: "bi-file-earmark-text",
+  weak: "bi-exclamation-triangle",
+  practice: "bi-pencil-square",
+  video: "bi-play-circle"
+};
+
+const resourceBadgeClass = {
+  Urgent: "badge-danger",
+  "Weak Area": "badge-warning",
+  Practice: "badge-info",
+  Video: "badge-success",
+  Notes: "badge-info"
+};
+
 function setupResourceFilters() {
   const filterButtons = document.querySelectorAll(".filter-btn");
-  const resourceCards = document.querySelectorAll(".resource-card");
+  const resourceList = document.getElementById("resourceList");
   const emptyState = document.getElementById("resourceEmpty");
 
-  if (!filterButtons.length || !resourceCards.length) return;
+  if (!filterButtons.length || !resourceList) return;
+
+  function applyFilter(selectedFilter) {
+    const resourceCards = resourceList.querySelectorAll(".resource-card");
+    let visibleCount = 0;
+
+    resourceCards.forEach((card) => {
+      const cardType = card.getAttribute("data-type");
+
+      if (selectedFilter === "all" || selectedFilter === cardType) {
+        card.classList.remove("hide");
+        visibleCount++;
+      } else {
+        card.classList.add("hide");
+      }
+    });
+
+    if (emptyState) {
+      emptyState.classList.toggle("d-none", visibleCount !== 0);
+    }
+  }
+
+  function renderResources(resources) {
+    resourceList.innerHTML = resources
+      .map(
+        (r) => `
+      <article class="sifu-card resource-card" data-type="${r.type}">
+        <div class="card-row">
+          <div class="card-icon">
+            <i class="bi ${resourceIcons[r.type] || "bi-file-earmark-text"}"></i>
+          </div>
+
+          <div>
+            <h3 class="card-title">${r.title}</h3>
+          </div>
+
+          <span class="badge-soft ${resourceBadgeClass[r.priority] || "badge-info"}">${r.priority}</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resource-meta">
+          <span><i class="bi bi-book"></i> ${r.subject}</span>
+          <span><i class="bi bi-clock"></i> ${r.duration}</span>
+        </div>
+      </article>
+    `
+      )
+      .join("");
+
+    const activeFilter = document.querySelector(".filter-btn.active");
+    applyFilter(activeFilter ? activeFilter.getAttribute("data-filter") : "all");
+  }
+
+  async function loadResources() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ai/resources/1`);
+      const result = await response.json();
+
+      if (!response.ok || !result.success || !result.data.length) {
+        throw new Error(result.message || "No resources found.");
+      }
+
+      renderResources(result.data);
+    } catch (error) {
+      console.error(error);
+      // Keep the static prototype resources already in the page as a fallback
+      applyFilter("all");
+      showToast("Couldn't reach Sifu AI server — showing demo resources instead.", "warning");
+    }
+  }
 
   filterButtons.forEach((button) => {
     button.addEventListener("click", function () {
       const selectedFilter = button.getAttribute("data-filter");
-      let visibleCount = 0;
 
       filterButtons.forEach((btn) => btn.classList.remove("active"));
       button.classList.add("active");
 
-      resourceCards.forEach((card) => {
-        const cardType = card.getAttribute("data-type");
-
-        if (selectedFilter === "all" || selectedFilter === cardType) {
-          card.classList.remove("hide");
-          visibleCount++;
-        } else {
-          card.classList.add("hide");
-        }
-      });
-
-      if (emptyState) {
-        if (visibleCount === 0) {
-          emptyState.classList.remove("d-none");
-        } else {
-          emptyState.classList.add("d-none");
-        }
-      }
-
+      applyFilter(selectedFilter);
       showToast(`Showing ${selectedFilter} resources.`, "success");
     });
   });
+
+  loadResources();
 }
 
 /* ---------- Analytics Dashboard ---------- */
