@@ -1,3 +1,4 @@
+const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const UserModel = require("../models/userModel");
 const CourseModel = require("../models/courseModel");
